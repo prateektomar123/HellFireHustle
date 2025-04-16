@@ -81,7 +81,7 @@ public class EnvironmentPooling : MonoBehaviour {
         allRoads = new GameObject("All Roads");
         roads.Clear(); 
 
-        Vector3 nextPosition = Vector3.zero; 
+        Vector3 nextPosition = new Vector3(0f, -0.63f, 0f); ; 
 
         for (int i = 0; i < roadAmountInPool; i++)
         {

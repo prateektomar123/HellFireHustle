@@ -27,6 +27,7 @@ public class GameManager : MonoBehaviour
         instance = this;
         DontDestroyOnLoad(gameObject);
 
+        // Register services
         ServiceLocator.Instance.RegisterService(this);
         ServiceLocator.Instance.RegisterService(new InputService());
         ServiceLocator.Instance.RegisterService(new EventSystem());
@@ -41,12 +42,12 @@ public class GameManager : MonoBehaviour
     public void StartGame()
     {
         Debug.Log("Game Started");
-        
+        // Initialize game state
     }
 
     public void GameOver()
     {
         Debug.Log("Game Over");
-        
+        // Handle game over logic
     }
 }

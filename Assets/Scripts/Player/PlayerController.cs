@@ -5,14 +5,25 @@ public class PlayerController : MonoBehaviour
     private PlayerModel model;
     private PlayerView view;
     private InputService inputService;
-    private readonly float laneDistance = 2f;
+    private readonly float laneDistance = 2f; // Distance between lanes
 
     private void Awake()
     {
         model = new PlayerModel();
         view = GetComponent<PlayerView>();
+    }
+
+    private void Start()
+    {
         inputService = ServiceLocator.Instance.GetService<InputService>();
-        inputService.Initialize(this);
+        if (inputService != null)
+        {
+            inputService.Initialize(this);
+        }
+        else
+        {
+            Debug.LogError("InputService not found in Start. Ensure GameManager is initialized first.");
+        }
     }
 
     public void MoveLeft()
@@ -23,7 +34,15 @@ public class PlayerController : MonoBehaviour
             model.SetLane(newLane);
             UpdatePlayerPosition();
             view.PlayMoveAnimation(true);
-            ServiceLocator.Instance.GetService<EventSystem>().Publish("PlayerMoved", newLane);
+            var eventSystem = ServiceLocator.Instance.GetService<EventSystem>();
+            if (eventSystem != null)
+            {
+                eventSystem.Publish("PlayerMoved", newLane);
+            }
+            else
+            {
+                Debug.LogError("EventSystem not found in MoveLeft.");
+            }
         }
     }
 
@@ -35,7 +54,15 @@ public class PlayerController : MonoBehaviour
             model.SetLane(newLane);
             UpdatePlayerPosition();
             view.PlayMoveAnimation(false);
-            ServiceLocator.Instance.GetService<EventSystem>().Publish("PlayerMoved", newLane);
+            var eventSystem = ServiceLocator.Instance.GetService<EventSystem>();
+            if (eventSystem != null)
+            {
+                eventSystem.Publish("PlayerMoved", newLane);
+            }
+            else
+            {
+                Debug.LogError("EventSystem not found in MoveRight.");
+            }
         }
     }
 
