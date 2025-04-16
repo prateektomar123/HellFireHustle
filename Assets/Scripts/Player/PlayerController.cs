@@ -5,7 +5,8 @@ public class PlayerController : MonoBehaviour
     private PlayerModel model;
     private PlayerView view;
     private InputService inputService;
-    private readonly float laneDistance = 2f; // Distance between lanes
+    private readonly float laneDistance = 2f; 
+    private readonly float forwardSpeed = 5f; 
 
     private void Awake()
     {
@@ -26,18 +27,23 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    private void Update()
+    {
+        
+        transform.Translate(Vector3.forward * forwardSpeed * Time.deltaTime);
+    }
+
     public void MoveLeft()
     {
-        if (model.CanMoveLeft)
+        if (model.CanMoveLeft())
         {
-            PlayerModel.Lane newLane = model.CurrentLane == PlayerModel.Lane.Middle ? PlayerModel.Lane.Left : PlayerModel.Lane.Middle;
-            model.SetLane(newLane);
+            model.CurrentLaneState.MoveLeft();
             UpdatePlayerPosition();
             view.PlayMoveAnimation(true);
             var eventSystem = ServiceLocator.Instance.GetService<EventSystem>();
             if (eventSystem != null)
             {
-                eventSystem.Publish("PlayerMoved", newLane);
+                eventSystem.Publish("PlayerMoved", model.CurrentLaneState);
             }
             else
             {
@@ -48,16 +54,15 @@ public class PlayerController : MonoBehaviour
 
     public void MoveRight()
     {
-        if (model.CanMoveRight)
+        if (model.CanMoveRight())
         {
-            PlayerModel.Lane newLane = model.CurrentLane == PlayerModel.Lane.Middle ? PlayerModel.Lane.Right : PlayerModel.Lane.Middle;
-            model.SetLane(newLane);
+            model.CurrentLaneState.MoveRight();
             UpdatePlayerPosition();
             view.PlayMoveAnimation(false);
             var eventSystem = ServiceLocator.Instance.GetService<EventSystem>();
             if (eventSystem != null)
             {
-                eventSystem.Publish("PlayerMoved", newLane);
+                eventSystem.Publish("PlayerMoved", model.CurrentLaneState);
             }
             else
             {
@@ -68,11 +73,11 @@ public class PlayerController : MonoBehaviour
 
     private void UpdatePlayerPosition()
     {
-        float xPos = model.CurrentLane switch
+        float xPos = model.CurrentLaneState switch
         {
-            PlayerModel.Lane.Left => -laneDistance,
-            PlayerModel.Lane.Middle => 0,
-            PlayerModel.Lane.Right => laneDistance,
+            LeftLaneState => -laneDistance,
+            MiddleLaneState => 0,
+            RightLaneState => laneDistance,
             _ => 0
         };
         view.UpdatePosition(new Vector3(xPos, transform.position.y, transform.position.z));
