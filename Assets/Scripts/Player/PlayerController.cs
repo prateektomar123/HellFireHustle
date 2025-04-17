@@ -16,6 +16,7 @@ public class PlayerController : MonoBehaviour
 
     private void Start()
     {
+        
         inputService = ServiceLocator.Instance.GetService<InputService>();
         if (inputService != null)
         {

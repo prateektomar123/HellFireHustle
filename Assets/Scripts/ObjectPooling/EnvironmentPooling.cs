@@ -25,17 +25,9 @@ public class EnvironmentPooling : MonoBehaviour {
 
     public int roadAmountInPool = 5;      
     private float roadLength;     
-
-    public bool automaticRoadLength = true;     
     public float manualRoadLength = 60f;       
-
-    [Header("Use This Layer On Road For Calculating Road Length")]
-    public LayerMask asphaltLayer;
-
-    [Header("Pooling Road Objects. Select Them While They Are On Your Scene")]
     public RoadObjects[] roadObjects;
     internal List<GameObject> roads = new List<GameObject>();
-
     internal GameObject allRoads;      
     private int index = 0;
 
@@ -45,11 +37,7 @@ public class EnvironmentPooling : MonoBehaviour {
 
         
         environmentType = Mathf.Clamp(environmentType, 0, roadObjects.Length - 1);
-
-        if (automaticRoadLength)
-            roadLength = GetRoadLength(roadObjects[environmentType].roadObject);
-        else
-            roadLength = manualRoadLength;
+        roadLength = manualRoadLength;
 
         CreateRoads(environmentType);
 
@@ -57,24 +45,6 @@ public class EnvironmentPooling : MonoBehaviour {
         {
             road.roadObject.SetActive(false);
         }
-    }
-    private float GetRoadLength(GameObject road) {
-
-        GameObject roadReference = Instantiate(road, Vector3.zero, Quaternion.identity);
-
-        Bounds combinedBounds = roadReference.GetComponentInChildren<Renderer>().bounds;
-        Renderer[] renderers = roadReference.GetComponentsInChildren<Renderer>();
-
-        foreach (Renderer render in renderers) {
-
-            if (render != roadReference.GetComponent<Renderer>() && 1 << render.gameObject.layer == asphaltLayer)
-                combinedBounds.Encapsulate(render.bounds);
-
-        }
-
-        Destroy(roadReference);
-        return combinedBounds.size.z - 1f;
-
     }
     private void CreateRoads(int selectedType)
     {
