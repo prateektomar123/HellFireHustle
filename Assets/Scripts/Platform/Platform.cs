@@ -9,7 +9,7 @@ public class Platform : MonoBehaviour
     {
         Length = length;
         LanePositionX = lanePositionX;
-        transform.localScale = new Vector3(2f, 0.5f, length); 
+        transform.localScale = new Vector3(2f, 0.1f, length); 
         transform.position = new Vector3(lanePositionX, 0, transform.position.z);
     }
 
