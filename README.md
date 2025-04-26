@@ -1,193 +1,152 @@
-Unity 3D Endless Runner Game
-Overview
-This is a 3D endless runner game built in Unity, featuring a player navigating an infinite series of platforms while avoiding a deadly fire ground below. The game uses a modular architecture with design patterns (Service Locator, Singleton, Observer, Command, State, MVC) and implements core mechanics like lane-based movement, dynamic platform spawning, and a scrolling camera. The project is structured in phases, with Phases 1–3 completed, covering infrastructure, player movement, and environment spawning.
-Features
+# HellFire Hustle
 
-Player Movement: Continuous forward movement with lane-based lateral movement (Left, Middle, Right) using the legacy Unity input system (A/D keys or swipe).
-Lane Management: State pattern enforces lane constraints (Middle ↔ Left/Right, no consecutive side-lane moves).
-Dynamic Environment: Platforms spawn based on the player’s lane:
-Middle: Randomly Left, Middle (continuous), or Right (halfway).
-Left/Right: Continuous in same lane or Middle (earlier).
+**HellFire Hustle** is a 3D endless runner game built in Unity, where the player navigates a character through a dynamically generated path of platforms, avoiding a deadly fire ground below. The game features lane-based movement, continuous forward motion, and a scrolling environment, with a focus on clean architecture and performance optimization.
 
+## Table of Contents
+- [Features](#features)
+- [Project Status](#project-status)
+- [Architecture](#architecture)
+- [Setup Instructions](#setup-instructions)
+- [Scene Setup](#scene-setup)
+- [Scripts Overview](#scripts-overview)
+- [Development Phases](#development-phases)
+- [Testing](#testing)
+- [Future Work](#future-work)
+- [Contributing](#contributing)
 
-Object Pooling: Efficient platform recycling to optimize performance.
-Fire Ground: Deadly surface below platforms triggers game over on contact.
-Scrolling Camera: Follows the player’s forward movement.
-Modular Architecture: Uses Service Locator, Singleton, Observer, Command, State, and MVC patterns for scalability.
+## Features
+- **Endless Runner Gameplay**: The player moves forward automatically, switching between Left, Middle, and Right lanes.
+- **Lane-Based Movement**: Constrained lane switching (Middle ↔ Left/Right, no consecutive side-lane moves) using the State pattern.
+- **Dynamic Platform Spawning**: Platforms spawn based on the player’s lane, with randomized placement and Object Pooling for performance.
+- **Deadly Fire Ground**: Contact with the fire ground triggers game over.
+- **Scrolling Camera**: Follows the player for a seamless experience.
+- **Input Handling**: Supports keyboard (A/D keys) and touch (swipe) inputs using Unity’s legacy input system.
+- **Clean Architecture**: Uses Service Locator, Singleton, Observer, Command, State, and MVC patterns for modularity.
 
-Project Structure
-Assets/
-├── Prefabs/
-│   └── Platform.prefab         # Platform prefab for spawning
-├── Scenes/
-│   └── MainScene.unity        # Main game scene
-├── Scripts/
-│   ├── GameManager.cs         # Singleton for game state and service registration
-│   ├── ServiceLocator.cs      # Service Locator pattern for global service access
-│   ├── EventSystem.cs         # Observer pattern for event handling
-│   ├── ICommand.cs            # Command pattern interface
-│   ├── MoveLeftCommand.cs     # Command for left movement
-│   ├── MoveRightCommand.cs    # Command for right movement
-│   ├── InputService.cs        # Handles legacy input (keyboard/touch)
-│   ├── PlayerModel.cs         # MVC Model for player data
-│   ├── PlayerView.cs          # MVC View for player visuals
-│   ├── PlayerController.cs    # MVC Controller for player logic
-│   ├── LaneState.cs           # Abstract state for lane management
-│   ├── MiddleLaneState.cs     # Middle lane state
-│   ├── LeftLaneState.cs       # Left lane state
-│   ├── RightLaneState.cs      # Right lane state
-│   ├── FireGround.cs          # Deadly fire ground logic
-│   ├── Platform.cs            # Platform properties (length, lane position)
-│   ├── ObjectPool.cs          # Object Pool for platform recycling
-│   ├── PlatformManager.cs     # Manages platform spawning/recycling
-│   └── CameraFollow.cs        # Camera follows player
+## Project Status
+The project is in **Phase 3** (Environment and Platform Spawning) of development, with core mechanics implemented. Future phases will add game loop, polish, and additional features like animations and obstacles.
 
-Setup Instructions
-Prerequisites
+## Architecture
+The project employs several design patterns for maintainability and scalability:
+- **Service Locator**: Manages global services (`GameManager`, `InputService`, `EventSystem`).
+- **Singleton**: Ensures a single `GameManager` instance.
+- **Observer**: Handles events (e.g., “PlayerMoved”) via `EventSystem`.
+- **Command**: Encapsulates input actions (`MoveLeftCommand`, `MoveRightCommand`).
+- **State**: Manages lane states (`MiddleLaneState`, `LeftLaneState`, `RightLaneState`).
+- **MVC**: Separates player logic (`PlayerModel`, `PlayerView`, `PlayerController`).
+- **Object Pooling**: Optimizes platform spawning/recycling.
 
-Unity Version: Unity 2022.3 LTS or later.
-Platform: Windows, macOS, or Linux (for development); supports PC and mobile (touch input).
-Git: For version control.
+## Setup Instructions
+### Prerequisites
+- **Unity**: Version 2022.3 LTS or later.
+- **Git**: For version control.
+- **IDE**: Visual Studio or Rider for C# scripting.
 
-Installation
+### Installation
+1. **Clone the Repository**:
+   ```bash
+   git clone <repository-url>
+   ```
+2. **Open in Unity**:
+   - Open Unity Hub, click **Add**, and select the cloned project folder.
+   - Ensure the Unity version matches 2022.3 LTS or later.
+3. **Configure Input System**:
+   - Go to **Edit > Project Settings > Player**.
+   - Set **Active Input Handling** to **Input Manager (Old)** to use the legacy input system.
+4. **Set Script Execution Order**:
+   - Go to **Edit > Project Settings > Script Execution Order**.
+   - Set:
+     - `GameManager`: `-100`
+     - `PlayerController`: `0`
+     - `PlatformManager`: `10`
+   - Click **Apply**.
 
-Clone the Repository:git clone <repository-url>
+## Scene Setup
+The main scene (`MainScene`) includes:
+- **GameManager**: Empty GameObject with `GameManager.cs`.
+- **Player**: Cube with `PlayerView.cs`, `PlayerController.cs`, and “Player” tag.
+- **PlatformManager**: Empty GameObject with `PlatformManager.cs`, linked to a platform prefab.
+- **FireGround**: Large plane (scale: `(10, 1, 1000)`, position: `(0, -0.5, 0)`) with `FireGround.cs` and a red material.
+- **Main Camera**: Positioned at `(0, 2, -5)` with `CameraFollow.cs`, linked to the Player.
 
+### Platform Prefab
+- Create a Cube named “Platform” (scale: `(2, 0.5, 10)`).
+- Add `Platform.cs`.
+- Save as a prefab in `Assets/Prefabs`.
+- Assign to `PlatformManager`’s `Platform Prefab` field in the Inspector.
 
-Open in Unity:
-Open Unity Hub, click Add, and select the project folder.
-Ensure the Unity version matches 2022.3 LTS or later.
+## Scripts Overview
+Scripts are organized in `Assets/Scripts` with subfolders:
+- **Core**:
+  - `ServiceLocator.cs`: Manages services.
+  - `GameManager.cs`: Initializes game state and services.
+  - `EventSystem.cs`: Publishes/subscribes to events.
+- **Input**:
+  - `ICommand.cs`, `MoveLeftCommand.cs`, `MoveRightCommand.cs`: Handle input actions.
+  - `InputService.cs`: Processes keyboard (A/D) and touch (swipe) inputs.
+- **Player**:
+  - `PlayerModel.cs`: Stores player data (lane state).
+  - `PlayerView.cs`: Updates player visuals.
+  - `PlayerController.cs`: Manages movement and input.
+  - `LaneState.cs`, `MiddleLaneState.cs`, `LeftLaneState.cs`, `RightLaneState.cs`: State pattern for lane management.
+- **Platform**:
+  - `FireGround.cs`: Triggers game over on collision.
+  - `Platform.cs`: Defines platform properties.
+  - `ObjectPool.cs`: Manages platform pooling.
+  - `PlatformManager.cs`: Spawns/recycles platforms.
+- **Camera**:
+  - `CameraFollow.cs`: Follows the player.
 
+## Development Phases
+### Phase 1: Infrastructure
+- Implemented Service Locator, Singleton, Observer, Command, and MVC patterns.
+- Set up legacy input system (A/D keys, swipe).
+- Created core scripts (`GameManager`, `InputService`, `PlayerController`, etc.).
 
-Configure Scene:
-Open Assets/Scenes/MainScene.unity.
-Verify the scene hierarchy:MainScene
-├── GameManager (GameObject)
-│   └── GameManager.cs
-├── Player (GameObject, Tag: "Player")
-│   ├── PlayerView.cs
-│   └── PlayerController.cs
-├── PlatformManager (GameObject)
-│   └── PlatformManager.cs
-├── FireGround (GameObject)
-│   └── FireGround.cs
-├── Main Camera (GameObject)
-│   └── CameraFollow.cs
+### Phase 2: Player Movement
+- Added continuous forward movement (5 units/second).
+- Implemented lane-based movement with State pattern.
+- Ensured lane constraints (Middle ↔ Left/Right).
 
+### Phase 3: Environment and Platform Spawning
+- Added deadly fire ground (`FireGround.cs`).
+- Implemented platform spawning with Object Pooling (`PlatformManager.cs`, `ObjectPool.cs`).
+- Set up lane-based spawning rules:
+  - **Middle**: Next platform in Left, Middle (continuous), or Right (halfway, 5 units).
+  - **Left/Right**: Next platform in same lane (continuous) or Middle (earlier, 5 units).
+- Added scrolling camera (`CameraFollow.cs`).
 
-Player: Assign the “Player” tag in the Inspector.
-PlatformManager: Assign Assets/Prefabs/Platform.prefab to the Platform Prefab field.
-Main Camera: Assign the Player GameObject to the Player field in CameraFollow.
-FireGround: Ensure it’s a large plane (e.g., scale: (10, 1, 1000), position: (0, -0.5, 0)).
+## Testing
+1. **Player Movement**:
+   - Press A/D or swipe to switch lanes.
+   - Verify constraints: Middle ↔ Left/Right, no Left ↔ Right.
+   - Confirm continuous forward movement.
+2. **Platform Spawning**:
+   - In Middle lane, check random spawning (Left: X=-2, Z=+5; Middle: X=0, Z=+10; Right: X=2, Z=+5).
+   - In Left/Right lanes, verify continuous or earlier Middle spawning.
+   - Ensure platforms are recycled (no new instantiations).
+3. **Fire Ground**:
+   - Move player to `y = -1` to trigger “Game Over” log.
+4. **Camera**:
+   - Confirm smooth Z-axis following.
+5. **Console Logs**:
+   - Check for service registration, lane changes, and platform spawning.
+   - Ensure no errors (e.g., “Service not found”).
 
+## Future Work
+- **Phase 4: Game Loop and Polish**:
+  - Implement start/restart mechanics.
+  - Add score system and UI.
+  - Include animations and visual effects (e.g., fire particles).
+- **Phase 5: Obstacles and Power-Ups**:
+  - Add obstacles on platforms.
+  - Introduce power-ups (e.g., speed boost).
+- **Phase 6: Final Polish**:
+  - Optimize performance.
+  - Add audio and menus.
 
-Set Script Execution Order:
-Go to Edit > Project Settings > Script Execution Order.
-Set:
-GameManager: -100
-PlayerController: 0
-PlatformManager: 10
-
-
-Click Apply.
-
-
-Test the Scene:
-Press Play in Unity.
-Use A/D keys or swipe left/right (in Device Simulator or on a touch device) to switch lanes.
-Verify:
-Player moves forward continuously.
-Platforms spawn dynamically (Left, Middle, Right from Middle; continuous or earlier from Left/Right).
-Falling to the fire ground logs “Game Over”.
-Camera follows the player smoothly.
-
-
-
-
-
-Gameplay Mechanics
-
-Controls:
-Keyboard: Press A (move left), D (move right).
-Touch: Swipe left/right to change lanes.
-
-
-Lanes: Three lanes (Left: X = -2, Middle: X = 0, Right: X = 2).
-From Middle, move to Left or Right.
-From Left/Right, return to Middle or stay (no consecutive side-lane moves).
-
-
-Platforms:
-Size: 2 units wide, 0.5 units high, 10 units long.
-Spawn when the player reaches the halfway point (Z = platform Z + 5).
-Middle lane: Randomly Left, Middle (continuous, Z = previous Z + 10), or Right (halfway, Z = previous Z + 5).
-Left/Right lanes: Continuous in same lane or Middle (earlier, Z = previous Z + 5).
-
-
-Fire Ground: Contact with the ground below platforms triggers game over.
-Camera: Follows the player’s Z-position with a fixed offset (e.g., (0, 2, -5)).
-
-Development Phases
-Phase 1: Infrastructure
-
-Implemented Service Locator, Singleton (GameManager), Observer (EventSystem), Command (MoveLeftCommand, MoveRightCommand), and MVC (PlayerModel, PlayerView, PlayerController).
-Set up legacy input system (InputService) for keyboard (A/D) and touch (swipe).
-Scripts: GameManager.cs, ServiceLocator.cs, EventSystem.cs, ICommand.cs, MoveLeftCommand.cs, MoveRightCommand.cs, InputService.cs, PlayerModel.cs, PlayerView.cs, PlayerController.cs.
-
-Phase 2: Player Movement
-
-Added continuous forward movement (5 units/second).
-Implemented State pattern for lane management (LaneState, MiddleLaneState, LeftLaneState, RightLaneState).
-Enforced lane constraints and integrated with input system.
-Scripts: Updated PlayerModel.cs, PlayerController.cs; added LaneState.cs, MiddleLaneState.cs, LeftLaneState.cs, RightLaneState.cs.
-
-Phase 3: Environment and Platform Spawning
-
-Created deadly fire ground (FireGround.cs).
-Implemented platform spawning with Object Pooling (Platform.cs, ObjectPool.cs, PlatformManager.cs).
-Added lane-based spawning logic and recycling.
-Set up scrolling camera (CameraFollow.cs).
-Scripts: FireGround.cs, Platform.cs, ObjectPool.cs, PlatformManager.cs, CameraFollow.cs.
-
-Phase 4: Planned (Game Loop and Polish)
-
-Add game loop (start, scoring, restart).
-Implement animations and visual effects (e.g., fire particles, player movement).
-Enhance UI and audio.
-Refine gameplay balance (speed, platform spacing).
-
-Known Issues
-
-Animations: PlayerView.PlayMoveAnimation is a placeholder; full animations will be added in Phase 4.
-Lane Initialization: PlatformManager uses a temporary MiddleLaneState(null) for initial lane state; will sync with PlayerModel in Phase 4.
-Visuals: Platforms and fire ground use basic materials; visual polish planned for Phase 4.
-
-Debugging Tips
-
-Spawning Issues:
-Check Console for Middle lane choice (should vary: 0, 1, 2) and Spawned platform at X logs in PlatformManager.
-Verify PlayerMoved events in PlayerController (logs in Publish calls).
-
-
-Service Errors:
-Ensure script execution order is set correctly.
-Check GameManager.Awake logs for service registration.
-
-
-Performance:
-Monitor Hierarchy for Object Pooling (no new platform instantiations).
-Adjust ObjectPool initial size (10) if needed.
-
-
-
-Contributing
-
-Fork the repository and create a branch for your feature or bug fix.
-Follow the existing architecture (Service Locator, MVC, etc.).
-Test changes in MainScene and commit with clear messages.
-Submit a pull request with a description of changes.
-
-License
-This project is unlicensed and intended for personal or educational use. Contact the repository owner for commercial use.
-Contact
-For issues or questions, open an issue on the repository or contact the project maintainer.
+## Contributing
+- Fork the repository and create a feature branch.
+- Follow Unity’s C# coding conventions.
+- Test changes thoroughly in `MainScene`.
+- Submit pull requests with clear descriptions.
