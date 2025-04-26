@@ -2,51 +2,54 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ServiceLocator
+public class ServiceLocator : MonoSingleton<ServiceLocator>
 {
-    private static ServiceLocator instance;
     private Dictionary<Type, object> services;
 
-    private ServiceLocator()
+    protected override void Awake()
     {
+        base.Awake();
         services = new Dictionary<Type, object>();
-    }
-
-    public static ServiceLocator Instance
-    {
-        get
-        {
-            if (instance == null)
-            {
-                instance = new ServiceLocator();
-            }
-            return instance;
-        }
     }
 
     public void RegisterService<T>(T service)
     {
         if (service == null)
         {
-            Debug.LogError($"Cannot register null service for type {typeof(T)}");
+            Debug.LogError($"Cannot register null service for {typeof(T).Name}.");
             return;
         }
-        services[typeof(T)] = service;
-        Debug.Log($"Service registered: {typeof(T)}");
+
+        Type type = typeof(T);
+        if (services.ContainsKey(type))
+        {
+            Debug.LogWarning($"Service {type.Name} already registered. Overwriting.");
+        }
+        services[type] = service;
+        Debug.Log($"Service registered: {type.Name}");
     }
 
     public T GetService<T>()
     {
-        if (services.TryGetValue(typeof(T), out var service))
+        Type type = typeof(T);
+        if (services.TryGetValue(type, out object service))
         {
             return (T)service;
         }
-        Debug.LogError($"Service not found: {typeof(T)}");
+        Debug.LogError($"Service not found: {type.Name}");
         return default;
     }
 
-    public void ClearServices()
+    public void RemoveService<T>()
     {
-        services.Clear();
+        Type type = typeof(T);
+        if (services.Remove(type))
+        {
+            Debug.Log($"Service removed: {type.Name}");
+        }
+        else
+        {
+            Debug.LogWarning($"Service {type.Name} not found for removal.");
+        }
     }
 }

@@ -2,16 +2,18 @@ public class LeftLaneState : LaneState
 {
     public LeftLaneState(PlayerModel model) : base(model) { }
 
-    public override bool CanMoveLeft() => false;
-    public override bool CanMoveRight() => true;
-
-    public override void MoveLeft()
+    public override LaneState MoveLeft()
     {
-       
+        return this; // Cannot move left from Left
     }
 
-    public override void MoveRight()
+    public override LaneState MoveRight()
     {
-        model.SetLaneState(new MiddleLaneState(model));
+        return new MiddleLaneState(model);
+    }
+
+    public override float GetLanePosition()
+    {
+        return -GameConstants.LANE_DISTANCE;
     }
 }

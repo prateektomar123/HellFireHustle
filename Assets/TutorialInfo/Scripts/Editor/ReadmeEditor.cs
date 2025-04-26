@@ -11,9 +11,7 @@ using System.Reflection;
 public class ReadmeEditor : Editor
 {
     static string s_ShowedReadmeSessionStateName = "ReadmeEditor.showedReadme";
-    
     static string s_ReadmeSourceDirectory = "Assets/TutorialInfo";
-
     const float k_Space = 16f;
 
     static ReadmeEditor()
@@ -24,10 +22,8 @@ public class ReadmeEditor : Editor
     static void RemoveTutorial()
     {
         if (EditorUtility.DisplayDialog("Remove Readme Assets",
-            
             $"All contents under {s_ReadmeSourceDirectory} will be removed, are you sure you want to proceed?",
-            "Proceed",
-            "Cancel"))
+            "Proceed", "Cancel"))
         {
             if (Directory.Exists(s_ReadmeSourceDirectory))
             {
@@ -80,9 +76,7 @@ public class ReadmeEditor : Editor
         if (ids.Length == 1)
         {
             var readmeObject = AssetDatabase.LoadMainAssetAtPath(AssetDatabase.GUIDToAssetPath(ids[0]));
-
             Selection.objects = new UnityEngine.Object[] { readmeObject };
-
             return (Readme)readmeObject;
         }
         else
@@ -109,7 +103,6 @@ public class ReadmeEditor : Editor
             GUILayout.Space(k_Space);
             GUILayout.BeginVertical();
             {
-
                 GUILayout.FlexibleSpace();
                 GUILayout.Label(readme.title, TitleStyle);
                 GUILayout.FlexibleSpace();
@@ -152,6 +145,21 @@ public class ReadmeEditor : Editor
         {
             RemoveTutorial();
         }
+    }
+
+    bool LinkLabel(GUIContent label, params GUILayoutOption[] options)
+    {
+        var position = GUILayoutUtility.GetRect(label, LinkStyle, options);
+
+        Handles.BeginGUI();
+        Handles.color = LinkStyle.normal.textColor;
+        Handles.DrawLine(new Vector3(position.xMin, position.yMax), new Vector3(position.xMax, position.yMax));
+        Handles.color = Color.white;
+        Handles.EndGUI();
+
+        EditorGUIUtility.AddCursorRect(position, MouseCursor.Link);
+
+        return GUI.Button(position, label, LinkStyle);
     }
 
     bool m_Initialized;
@@ -200,6 +208,7 @@ public class ReadmeEditor : Editor
     {
         if (m_Initialized)
             return;
+
         m_BodyStyle = new GUIStyle(EditorStyles.label);
         m_BodyStyle.wordWrap = true;
         m_BodyStyle.fontSize = 14;
@@ -214,8 +223,6 @@ public class ReadmeEditor : Editor
 
         m_LinkStyle = new GUIStyle(m_BodyStyle);
         m_LinkStyle.wordWrap = false;
-
-        // Match selection color which works nicely for both light and dark skins
         m_LinkStyle.normal.textColor = new Color(0x00 / 255f, 0x78 / 255f, 0xDA / 255f, 1f);
         m_LinkStyle.stretchWidth = false;
 
@@ -223,20 +230,5 @@ public class ReadmeEditor : Editor
         m_ButtonStyle.fontStyle = FontStyle.Bold;
 
         m_Initialized = true;
-    }
-
-    bool LinkLabel(GUIContent label, params GUILayoutOption[] options)
-    {
-        var position = GUILayoutUtility.GetRect(label, LinkStyle, options);
-
-        Handles.BeginGUI();
-        Handles.color = LinkStyle.normal.textColor;
-        Handles.DrawLine(new Vector3(position.xMin, position.yMax), new Vector3(position.xMax, position.yMax));
-        Handles.color = Color.white;
-        Handles.EndGUI();
-
-        EditorGUIUtility.AddCursorRect(position, MouseCursor.Link);
-
-        return GUI.Button(position, label, LinkStyle);
     }
 }

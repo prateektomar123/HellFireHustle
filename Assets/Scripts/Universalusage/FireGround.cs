@@ -6,8 +6,7 @@ public class FireGround : MonoBehaviour
     {
         if (collision.gameObject.CompareTag("Player"))
         {
-            var gameManager = ServiceLocator.Instance.GetService<GameManager>();
-            gameManager.GameOver();
+            Debug.Log("Player has collided with the fire ground!");
         }
     }
 }

@@ -4,83 +4,36 @@ public class PlayerController : MonoBehaviour
 {
     private PlayerModel model;
     private PlayerView view;
-    private InputService inputService;
-    private readonly float laneDistance = 2f; 
-    private readonly float forwardSpeed = 5f; 
+    private EventSystem eventSystem;
 
     private void Awake()
     {
         model = new PlayerModel();
         view = GetComponent<PlayerView>();
-    }
-
-    private void Start()
-    {
-        
-        inputService = ServiceLocator.Instance.GetService<InputService>();
-        if (inputService != null)
+        eventSystem = ServiceLocator.Instance.GetService<EventSystem>();
+        if (eventSystem == null)
         {
-            inputService.Initialize(this);
+            Debug.LogError("EventSystem not found in PlayerController.Awake.");
+            enabled = false;
         }
-        else
+        if (view == null)
         {
-            Debug.LogError("InputService not found in Start. Ensure GameManager is initialized first.");
+            Debug.LogError("PlayerView not found on Player GameObject.");
+            enabled = false;
         }
     }
 
     private void Update()
     {
-        
-        transform.Translate(Vector3.forward * forwardSpeed * Time.deltaTime);
-    }
+        transform.Translate(Vector3.forward * GameConstants.PLAYER_FORWARD_SPEED * Time.deltaTime);
 
-    public void MoveLeft()
-    {
-        if (model.CanMoveLeft())
+        var inputService = ServiceLocator.Instance.GetService<InputService>();
+        ICommand command = inputService?.GetInputCommand();
+        if (command != null)
         {
-            model.CurrentLaneState.MoveLeft();
-            UpdatePlayerPosition();
-            view.PlayMoveAnimation(true);
-            var eventSystem = ServiceLocator.Instance.GetService<EventSystem>();
-            if (eventSystem != null)
-            {
-                eventSystem.Publish("PlayerMoved", model.CurrentLaneState);
-            }
-            else
-            {
-                Debug.LogError("EventSystem not found in MoveLeft.");
-            }
+            command.Execute(model);
+            view.MoveToLane(model.CurrentLanePosition, GameConstants.LANE_SWITCH_DURATION);
+            eventSystem.Publish("PlayerMoved", model.CurrentLaneState);
         }
-    }
-
-    public void MoveRight()
-    {
-        if (model.CanMoveRight())
-        {
-            model.CurrentLaneState.MoveRight();
-            UpdatePlayerPosition();
-            view.PlayMoveAnimation(false);
-            var eventSystem = ServiceLocator.Instance.GetService<EventSystem>();
-            if (eventSystem != null)
-            {
-                eventSystem.Publish("PlayerMoved", model.CurrentLaneState);
-            }
-            else
-            {
-                Debug.LogError("EventSystem not found in MoveRight.");
-            }
-        }
-    }
-
-    private void UpdatePlayerPosition()
-    {
-        float xPos = model.CurrentLaneState switch
-        {
-            LeftLaneState => -laneDistance,
-            MiddleLaneState => 0,
-            RightLaneState => laneDistance,
-            _ => 0
-        };
-        view.UpdatePosition(new Vector3(xPos, transform.position.y, transform.position.z));
     }
 }

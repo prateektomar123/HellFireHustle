@@ -7,8 +7,7 @@ public abstract class LaneState
         this.model = model;
     }
 
-    public abstract bool CanMoveLeft();
-    public abstract bool CanMoveRight();
-    public abstract void MoveLeft();
-    public abstract void MoveRight();
+    public abstract LaneState MoveLeft();
+    public abstract LaneState MoveRight();
+    public abstract float GetLanePosition();
 }

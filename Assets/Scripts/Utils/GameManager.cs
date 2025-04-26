@@ -1,51 +1,21 @@
 using UnityEngine;
 
-public class GameManager : MonoBehaviour
+public class GameManager : MonoSingleton<GameManager>
 {
-    private static GameManager instance;
-    public static GameManager Instance
-    {
-        get
-        {
-            if (instance == null)
-            {
-                GameObject go = new GameObject("GameManager");
-                instance = go.AddComponent<GameManager>();
-                DontDestroyOnLoad(go);
-            }
-            return instance;
-        }
-    }
+    private InputService inputService;
 
-    private void Awake()
+    protected override void Awake()
     {
-        if (instance != null && instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-        instance = this;
-        DontDestroyOnLoad(gameObject);
+        base.Awake();
         ServiceLocator.Instance.RegisterService(this);
-        ServiceLocator.Instance.RegisterService(new InputService());
+        inputService = new InputService();
+        ServiceLocator.Instance.RegisterService(inputService);
         ServiceLocator.Instance.RegisterService(new EventSystem());
+        ServiceLocator.Instance.RegisterService(GetComponent<EnvironmentManager>());
     }
 
     private void Update()
     {
-        var inputService = ServiceLocator.Instance.GetService<InputService>();
         inputService?.Update();
-    }
-
-    public void StartGame()
-    {
-        Debug.Log("Game Started");
-        
-    }
-
-    public void GameOver()
-    {
-        Debug.Log("Game Over");
-       
     }
 }

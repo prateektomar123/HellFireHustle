@@ -1,17 +1,10 @@
-using UnityEngine;
-
+/// <summary>
+/// Command to move the player to the left lane.
+/// </summary>
 public class MoveLeftCommand : ICommand
 {
-    private PlayerController playerController;
-
-    public MoveLeftCommand(PlayerController controller)
+    public void Execute(PlayerModel model)
     {
-        playerController = controller;
-    }
-
-    public void Execute()
-    {
-        playerController.MoveLeft();
-        Debug.Log("Move Left Command Executed");
+        model.MoveLeft();
     }
 }

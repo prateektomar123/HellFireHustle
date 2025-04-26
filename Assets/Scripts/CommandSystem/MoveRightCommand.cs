@@ -1,17 +1,7 @@
-using UnityEngine;
-
 public class MoveRightCommand : ICommand
 {
-    private PlayerController playerController;
-
-    public MoveRightCommand(PlayerController controller)
+    public void Execute(PlayerModel model)
     {
-        playerController = controller;
-    }
-
-    public void Execute()
-    {
-        playerController.MoveRight();
-        Debug.Log("Move Right Command Executed");
+        model.MoveRight();
     }
 }
