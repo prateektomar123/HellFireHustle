@@ -11,16 +11,7 @@ public class PlayerController : MonoBehaviour
         model = new PlayerModel();
         view = GetComponent<PlayerView>();
         eventSystem = ServiceLocator.Instance.GetService<EventSystem>();
-        if (eventSystem == null)
-        {
-            Debug.LogError("EventSystem not found in PlayerController.Awake.");
-            enabled = false;
-        }
-        if (view == null)
-        {
-            Debug.LogError("PlayerView not found on Player GameObject.");
-            enabled = false;
-        }
+        
     }
 
     private void Update()

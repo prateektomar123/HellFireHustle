@@ -3,15 +3,22 @@ using UnityEngine;
 
 public class GenericObjectPool<T> where T : Component
 {
-    private List<T> pool;
-    private GameObject prefab;
-    private Transform parent;
+    private readonly List<T> _pool = new();
+    private GameObject _prefab;
+    private Transform _parent;
+    private int _maxSize;
 
-    public GenericObjectPool(GameObject prefab, int initialSize, Transform parent)
+    public GenericObjectPool(GameObject prefab, int initialSize, int maxSize, Transform parent)
     {
-        this.prefab = prefab;
-        this.parent = parent;
-        pool = new List<T>();
+        if (prefab == null || !prefab.GetComponent<T>())
+        {
+            Debug.LogError($"Prefab {prefab?.name} is invalid or lacks {typeof(T).Name}.");
+            return;
+        }
+
+        _prefab = prefab;
+        _parent = parent;
+        _maxSize = maxSize;
 
         for (int i = 0; i < initialSize; i++)
         {
@@ -21,22 +28,22 @@ public class GenericObjectPool<T> where T : Component
 
     private T CreateObject()
     {
-        GameObject obj = Object.Instantiate(prefab, parent);
-        T component = obj.GetComponent<T>();
-        if (component == null)
+        if (_pool.Count >= _maxSize)
         {
-            Debug.LogError($"Prefab {prefab.name} does not have component {typeof(T).Name}");
-            Object.Destroy(obj);
+            Debug.LogWarning($"Pool for {typeof(T).Name} reached max size: {_maxSize}.");
             return null;
         }
+
+        GameObject obj = Object.Instantiate(_prefab, _parent);
+        T component = obj.GetComponent<T>();
         obj.SetActive(false);
-        pool.Add(component);
+        _pool.Add(component);
         return component;
     }
 
     public T GetObject()
     {
-        foreach (var obj in pool)
+        foreach (T obj in _pool)
         {
             if (!obj.gameObject.activeInHierarchy)
             {
@@ -50,12 +57,10 @@ public class GenericObjectPool<T> where T : Component
 
     public void ReturnObject(T obj)
     {
+        if (obj == null) return;
         obj.gameObject.SetActive(false);
-        obj.transform.position = Vector3.zero;
+        obj.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
     }
 
-    public IReadOnlyList<T> GetPooledObjects()
-    {
-        return pool.AsReadOnly();
-    }
+    public IReadOnlyList<T> PooledObjects => _pool.AsReadOnly();
 }
