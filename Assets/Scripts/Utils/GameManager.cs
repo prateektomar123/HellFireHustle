@@ -3,6 +3,9 @@ using UnityEngine;
 public class GameManager : MonoSingleton<GameManager>
 {
     private InputService _inputService;
+    [SerializeField] private GameConfig gameConfig;
+
+    public GameConfig GameConfig => gameConfig;
 
     protected override void Awake()
     {
@@ -11,8 +14,7 @@ public class GameManager : MonoSingleton<GameManager>
         _inputService = new InputService();
         ServiceLocator.Instance.RegisterService(_inputService);
         ServiceLocator.Instance.RegisterService(new EventSystem());
-        // ServiceLocator.Instance.RegisterService(GetComponent<PlatformManager>());
-        // ServiceLocator.Instance.RegisterService(GetComponent<FireGroundManager>());
+        ServiceLocator.Instance.RegisterService(gameConfig);
     }
 
     private void Update()

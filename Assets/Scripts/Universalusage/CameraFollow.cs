@@ -16,8 +16,8 @@ public class CameraFollow : MonoBehaviour
     {
         transform.position = new Vector3(
             0,
-            GameConstants.CAMERA_Y_OFFSET,
-            player.position.z + GameConstants.CAMERA_Z_OFFSET
+            GameManager.Instance.GameConfig.cameraYOffset,
+            player.position.z + GameManager.Instance.GameConfig.cameraZOffset
         );
     }
 }

@@ -1,38 +1,48 @@
+// Define the event types
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 
+public enum GameEventType
+{
+    PlayerMoved,
+    PlatformMidpointReached,
+    PlayerHitFireGround,
+    GameOver,
+    GameStarted
+}
+
+// Updated EventSystem class
 public class EventSystem
 {
-    private Dictionary<string, List<Action<object>>> eventListeners;
+    private Dictionary<GameEventType, List<Action<object>>> eventListeners;
 
     public EventSystem()
     {
-        eventListeners = new Dictionary<string, List<Action<object>>>();
+        eventListeners = new Dictionary<GameEventType, List<Action<object>>>();
     }
 
-    public void Subscribe(string eventName, Action<object> listener)
+    public void Subscribe(GameEventType eventType, Action<object> listener)
     {
-        if (!eventListeners.ContainsKey(eventName))
+        if (!eventListeners.ContainsKey(eventType))
         {
-            eventListeners[eventName] = new List<Action<object>>();
+            eventListeners[eventType] = new List<Action<object>>();
         }
-        eventListeners[eventName].Add(listener);
+        eventListeners[eventType].Add(listener);
     }
 
-    public void Unsubscribe(string eventName, Action<object> listener)
+    public void Unsubscribe(GameEventType eventType, Action<object> listener)
     {
-        if (eventListeners.ContainsKey(eventName))
+        if (eventListeners.ContainsKey(eventType))
         {
-            eventListeners[eventName].Remove(listener);
+            eventListeners[eventType].Remove(listener);
         }
     }
 
-    public void Publish(string eventName, object data = null)
+    public void Publish(GameEventType eventType, object data = null)
     {
-        if (eventListeners.ContainsKey(eventName))
+        if (eventListeners.ContainsKey(eventType))
         {
-            foreach (var listener in eventListeners[eventName])
+            foreach (var listener in eventListeners[eventType])
             {
                 listener?.Invoke(data);
             }

@@ -11,14 +11,14 @@ public class Platform : MonoBehaviour
     {
         _midpointCollider = gameObject.AddComponent<BoxCollider>();
         _midpointCollider.isTrigger = true;
-        _midpointCollider.size = new Vector3(GameConstants.PLATFORM_WIDTH, 0.1f, 0.1f);
+        _midpointCollider.size = new Vector3(GameManager.Instance.GameConfig.platformWidth, 0.1f, 0.1f);
     }
 
     public void Initialize(float length, float lanePositionX)
     {
         Length = length;
         LanePositionX = lanePositionX;
-        transform.localScale = new Vector3(GameConstants.PLATFORM_WIDTH, GameConstants.PLATFORM_HEIGHT, length);
+        transform.localScale = new Vector3(GameManager.Instance.GameConfig.platformWidth, GameManager.Instance.GameConfig.platformHeight, length);
         transform.position = new Vector3(lanePositionX, 0, transform.position.z);
 
         float midpointZ = (length * 0.5f) - (length / 2f);
@@ -35,7 +35,9 @@ public class Platform : MonoBehaviour
         if (other.CompareTag("Player"))
         {
             ServiceLocator.Instance.GetService<EventSystem>()?
-                .Publish("PlatformMidpointReached");
+                .Publish(GameEventType.PlatformMidpointReached, this);
+
+                
         }
     }
 }

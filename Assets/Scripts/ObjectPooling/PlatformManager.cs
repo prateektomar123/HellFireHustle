@@ -36,7 +36,7 @@ public class PlatformManager : MonoBehaviour
     {
         _platformPool = new GenericObjectPool<Platform>(
             platformPrefab,
-            GameConstants.INITIAL_POOL_SIZE,
+            GameManager.Instance.GameConfig.initialPoolSize,
             10,
             transform
         );
@@ -70,7 +70,7 @@ public class PlatformManager : MonoBehaviour
             Debug.LogError("Failed to get platform from pool.", this);
             return;
         }
-        platform.Initialize(GameConstants.PLATFORM_LENGTH, 0);
+        platform.Initialize(GameManager.Instance.GameConfig.platformLength, 0);
         platform.transform.position = Vector3.zero;
         _activePlatforms.Enqueue(platform);
     }
@@ -84,7 +84,7 @@ public class PlatformManager : MonoBehaviour
             Debug.LogError("Failed to get platform from pool.", this);
             return;
         }
-        platform.Initialize(GameConstants.PLATFORM_LENGTH, nextPosition.x);
+        platform.Initialize(GameManager.Instance.GameConfig.platformLength, nextPosition.x);
         platform.transform.position = nextPosition;
         _activePlatforms.Enqueue(platform);
         _lastPlatformZ = nextPosition.z;
@@ -99,31 +99,31 @@ public class PlatformManager : MonoBehaviour
         if (_currentPlayerLane is LeftLaneState)
         {
             bool stayLeft = Random.value < 0.5f;
-            nextX = stayLeft ? -GameConstants.LANE_DISTANCE : 0;
+            nextX = stayLeft ? -GameManager.Instance.GameConfig.laneDistance : 0;
             isAdjacent = stayLeft;
-            nextZ = _lastPlatformZ + (stayLeft ? GameConstants.PLATFORM_LENGTH : GameConstants.PLATFORM_LENGTH / 2);
+            nextZ = _lastPlatformZ + (stayLeft ? GameManager.Instance.GameConfig.platformLength : GameManager.Instance.GameConfig.platformLength / 2);
         }
         else if (_currentPlayerLane is RightLaneState)
         {
             bool stayRight = Random.value < 0.5f;
-            nextX = stayRight ? GameConstants.LANE_DISTANCE : 0;
+            nextX = stayRight ? GameManager.Instance.GameConfig.laneDistance : 0;
             isAdjacent = stayRight;
-            nextZ = _lastPlatformZ + (stayRight ? GameConstants.PLATFORM_LENGTH : GameConstants.PLATFORM_LENGTH / 2);
+            nextZ = _lastPlatformZ + (stayRight ? GameManager.Instance.GameConfig.platformLength : GameManager.Instance.GameConfig.platformLength / 2);
         }
         else // MiddleLaneState or null
         {
             int laneChoice = Random.Range(0, 3);
             nextX = laneChoice switch
             {
-                0 => -GameConstants.LANE_DISTANCE, // Middle-to-Left
+                0 => -GameManager.Instance.GameConfig.laneDistance, // Middle-to-Left
                 1 => 0,                           // Middle-to-Middle
-                _ => GameConstants.LANE_DISTANCE  // Middle-to-Right
+                _ => GameManager.Instance.GameConfig.laneDistance  // Middle-to-Right
             };
             isAdjacent = (laneChoice == 1);
-            nextZ = _lastPlatformZ + (laneChoice == 1 ? GameConstants.PLATFORM_LENGTH : GameConstants.PLATFORM_LENGTH / 2);
+            nextZ = _lastPlatformZ + (laneChoice == 1 ? GameManager.Instance.GameConfig.platformLength : GameManager.Instance.GameConfig.platformLength / 2);
         }
 
-        Debug.Log($"Spawning platform at X={nextX}, Z={nextZ}, Lane={_currentPlayerLane?.GetType().Name}, StartZ={nextZ - GameConstants.PLATFORM_LENGTH/2}, Adjacent={isAdjacent}");
+        Debug.Log($"Spawning platform at X={nextX}, Z={nextZ}, Lane={_currentPlayerLane?.GetType().Name}, StartZ={nextZ - GameManager.Instance.GameConfig.platformLength/2}, Adjacent={isAdjacent}");
         return new Vector3(nextX, 0, nextZ);
     }
 
@@ -131,7 +131,7 @@ public class PlatformManager : MonoBehaviour
     {
         if (_activePlatforms.Count == 0) return;
         Platform oldestPlatform = _activePlatforms.Peek();
-        if (playerZ > oldestPlatform.transform.position.z + GameConstants.PLATFORM_LENGTH)
+        if (playerZ > oldestPlatform.transform.position.z + GameManager.Instance.GameConfig.platformLength)
         {
             _platformPool.ReturnObject(oldestPlatform);
             _activePlatforms.Dequeue();
@@ -144,8 +144,8 @@ public class PlatformManager : MonoBehaviour
         var eventSystem = ServiceLocator.Instance.GetService<EventSystem>();
         if (eventSystem != null)
         {
-            eventSystem.Subscribe("PlayerMoved", OnPlayerMoved);
-            eventSystem.Subscribe("PlatformMidpointReached", OnPlatformMidpointReached);
+            eventSystem.Subscribe(GameEventType.PlayerMoved, OnPlayerMoved);
+            eventSystem.Subscribe(GameEventType.PlatformMidpointReached, OnPlatformMidpointReached);
         }
         else
         {
@@ -158,8 +158,8 @@ public class PlatformManager : MonoBehaviour
         var eventSystem = ServiceLocator.Instance.GetService<EventSystem>();
         if (eventSystem != null)
         {
-            eventSystem.Unsubscribe("PlayerMoved", OnPlayerMoved);
-            eventSystem.Unsubscribe("PlatformMidpointReached", OnPlatformMidpointReached);
+            eventSystem.Unsubscribe(GameEventType.PlayerMoved, OnPlayerMoved);
+            eventSystem.Unsubscribe(GameEventType.PlatformMidpointReached, OnPlatformMidpointReached);
         }
         ServiceLocator.Instance.RemoveService<PlatformManager>();
     }

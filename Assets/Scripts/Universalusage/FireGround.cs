@@ -15,7 +15,7 @@ public class FireGround : MonoBehaviour
         if (collision.gameObject.CompareTag("Player"))
         {
             ServiceLocator.Instance.GetService<EventSystem>()?
-                .Publish("PlayerHitFireGround");
+                .Publish(GameEventType.PlayerHitFireGround);
         }
     }
 }

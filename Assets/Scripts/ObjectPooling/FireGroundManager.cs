@@ -5,7 +5,6 @@ public class FireGroundManager : MonoBehaviour
 {
     [SerializeField] private GameObject fireGroundPrefab;
     [SerializeField] private Transform player;
-
     private GenericObjectPool<FireGround> _fireGroundPool;
     private Queue<FireGround> _activeFireGrounds = new();
     private float _lastFireGroundZ;
@@ -14,7 +13,6 @@ public class FireGroundManager : MonoBehaviour
     {
         ValidateSetup();
         InitializePool();
-        RegisterServices();
     }
 
     private void ValidateSetup()
@@ -29,14 +27,15 @@ public class FireGroundManager : MonoBehaviour
             Debug.LogError("Player transform not assigned.");
             enabled = false;
         }
+        
     }
 
     private void InitializePool()
     {
         _fireGroundPool = new GenericObjectPool<FireGround>(
             fireGroundPrefab,
-            2,
-            2,
+            GameManager.Instance.GameConfig.initialPoolSize,
+            GameManager.Instance.GameConfig.initialPoolSize,
             this.transform
         );
     }
@@ -44,14 +43,14 @@ public class FireGroundManager : MonoBehaviour
     private void Start()
     {
         SpawnInitialFireGrounds();
-        _lastFireGroundZ = GameConstants.FIRE_GROUND_LENGTH;
+        _lastFireGroundZ = GameManager.Instance.GameConfig.fireGroundLength;
     }
 
     private void Update()
     {
         if (_activeFireGrounds.Count == 0) return;
         float playerZ = player.position.z;
-        if (playerZ > _activeFireGrounds.Peek().transform.position.z + GameConstants.FIRE_GROUND_LENGTH)
+        if (playerZ > _activeFireGrounds.Peek().transform.position.z + GameManager.Instance.GameConfig.fireGroundLength)
         {
             RepositionFireGround();
         }
@@ -61,32 +60,24 @@ public class FireGroundManager : MonoBehaviour
     {
         // First FireGround at Z = 0
         FireGround firstGround = _fireGroundPool.GetObject();
-        firstGround.Initialize(GameConstants.FIRE_GROUND_LENGTH);
-        firstGround.transform.position = new Vector3(0, GameConstants.FIRE_GROUND_Y_POSITION, 0);
+        firstGround.Initialize(GameManager.Instance.GameConfig.fireGroundLength);
+        firstGround.transform.position = new Vector3(0, GameManager.Instance.GameConfig.fireGroundYPosition, 0);
         _activeFireGrounds.Enqueue(firstGround);
 
-        // Second FireGround at Z = FIRE_GROUND_LENGTH
+        // Second FireGround at Z = fireGroundLength
         FireGround secondGround = _fireGroundPool.GetObject();
-        secondGround.Initialize(GameConstants.FIRE_GROUND_LENGTH);
-        secondGround.transform.position = new Vector3(0, GameConstants.FIRE_GROUND_Y_POSITION, GameConstants.FIRE_GROUND_LENGTH);
+        secondGround.Initialize(GameManager.Instance.GameConfig.fireGroundLength);
+        secondGround.transform.position = new Vector3(0, GameManager.Instance.GameConfig.fireGroundYPosition, GameManager.Instance.GameConfig.fireGroundLength);
         _activeFireGrounds.Enqueue(secondGround);
     }
 
     private void RepositionFireGround()
     {
         FireGround oldestFireGround = _activeFireGrounds.Dequeue();
-        _lastFireGroundZ += GameConstants.FIRE_GROUND_LENGTH;
-        oldestFireGround.transform.position = new Vector3(0, GameConstants.FIRE_GROUND_Y_POSITION, _lastFireGroundZ);
+        _lastFireGroundZ += GameManager.Instance.GameConfig.fireGroundLength;
+        oldestFireGround.transform.position = new Vector3(0, GameManager.Instance.GameConfig.fireGroundYPosition, _lastFireGroundZ);
         _activeFireGrounds.Enqueue(oldestFireGround);
     }
 
-    private void RegisterServices()
-    {
-        //ServiceLocator.Instance.RegisterService(this);
-    }
-
-    private void OnDestroy()
-    {
-        ServiceLocator.Instance.RemoveService<FireGroundManager>();
-    }
+    
 }

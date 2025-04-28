@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: df2a6e0eca6b8494dafd08ff0c1a707e, type: 3}
+  m_Name: GameConfig
+  m_EditorClassIdentifier: 
+  playerForwardSpeed: 5
+  laneDistance: 2
+  laneSwitchDuration: 0.2
+  platformLength: 10
+  platformWidth: 2
+  platformHeight: 0.5
+  initialPoolSize: 5
+  fireGroundYPosition: 0
+  fireGroundLength: 112.5
+  cameraYOffset: 2
+  cameraZOffset: -5
