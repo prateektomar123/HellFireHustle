@@ -10,11 +10,13 @@ public class PlatformManager : MonoBehaviour
     private Queue<Platform> _activePlatforms = new();
     private LaneState _currentPlayerLane;
     private float _lastPlatformZ;
-    private EventSystem eventSystem;
+    private EventSystem _eventSystem;
+    private GameStateManager _gameStateManager;
+    private bool _isInitialized = false;
+
     private void Awake()
     {
         ValidateSetup();
-        InitializePool();
         RegisterServices();
     }
 
@@ -34,6 +36,14 @@ public class PlatformManager : MonoBehaviour
 
     private void InitializePool()
     {
+        // Check if GameManager is ready before initializing pool
+        if (GameManager.Instance == null || GameManager.Instance.GameConfig == null)
+        {
+            Debug.LogError("GameManager or GameConfig not available for platform pool initialization");
+            return;
+        }
+
+        Debug.Log("Initializing platform pool");
         _platformPool = new GenericObjectPool<Platform>(
             platformPrefab,
             GameManager.Instance.GameConfig.initialPoolSize,
@@ -44,9 +54,57 @@ public class PlatformManager : MonoBehaviour
 
     private void Start()
     {
+        // Subscribe to game start event to initialize properly
+        _eventSystem = ServiceLocator.Instance.GetService<EventSystem>();
+        if (_eventSystem != null)
+        {
+            _eventSystem.Subscribe(GameEventType.GameStarted, OnGameStarted);
+        }
+
+        _gameStateManager = ServiceLocator.Instance.GetService<GameStateManager>();
+
+        // Set default lane
         _currentPlayerLane = new MiddleLaneState(null);
+
+        // Initialize pool
+        InitializePool();
+    }
+
+    private void OnGameStarted(object data)
+    {
+        Debug.Log("Game started event received, initializing platforms");
+        // Clear any existing platforms from previous runs
+        ClearActivePlatforms();
+
+        // Initialize with first platform
         SpawnInitialPlatform();
 
+        _isInitialized = true;
+    }
+
+    private void ClearActivePlatforms()
+    {
+        if (_platformPool == null)
+        {
+            InitializePool();
+        }
+
+        if (_platformPool == null)
+        {
+            Debug.LogError("Platform pool initialization failed");
+            return;
+        }
+
+        while (_activePlatforms.Count > 0)
+        {
+            Platform platform = _activePlatforms.Dequeue();
+            if (platform != null)
+            {
+                _platformPool.ReturnObject(platform);
+            }
+        }
+
+        _lastPlatformZ = 0f;
     }
 
     private void OnPlayerMoved(object data)
@@ -57,6 +115,12 @@ public class PlatformManager : MonoBehaviour
 
     private void OnPlatformMidpointReached(object data)
     {
+        // Check if game is currently in playing state
+        if (_gameStateManager != null && _gameStateManager.CurrentState != GameState.Playing)
+        {
+            return;
+        }
+
         if (_activePlatforms.Count == 0) return;
         SpawnNextPlatform();
         RecycleOldestPlatform(player.position.z);
@@ -64,15 +128,24 @@ public class PlatformManager : MonoBehaviour
 
     private void SpawnInitialPlatform()
     {
+        if (_platformPool == null)
+        {
+            Debug.LogError("Platform pool not initialized");
+            return;
+        }
+
         Platform platform = _platformPool.GetObject();
         if (platform == null)
         {
             Debug.LogError("Failed to get platform from pool.", this);
             return;
         }
+
         platform.Initialize(GameManager.Instance.GameConfig.platformLength, 0);
         platform.transform.position = Vector3.zero;
         _activePlatforms.Enqueue(platform);
+
+        Debug.Log("Initial platform spawned");
     }
 
     private void SpawnNextPlatform()
@@ -88,6 +161,8 @@ public class PlatformManager : MonoBehaviour
         platform.transform.position = nextPosition;
         _activePlatforms.Enqueue(platform);
         _lastPlatformZ = nextPosition.z;
+
+        Debug.Log($"Next platform spawned at {nextPosition}");
     }
 
     private Vector3 CalculateNextPlatformPosition()
@@ -123,24 +198,16 @@ public class PlatformManager : MonoBehaviour
             isAdjacent = (laneChoice == 1); // Adjacent only if staying in middle lane
         }
 
-        // _lastPlatformZ is the END of the previous platform
-
-        float platformHalfLength = GameManager.Instance.GameConfig.platformLength / 2;
-
         if (isAdjacent)
         {
             // For same lane, we want gap between platforms
-            // Platform center = last platform end + gap + half of current platform length
             nextZ = _lastPlatformZ + GameManager.Instance.GameConfig.platformGap;
         }
         else
         {
             // For lane change, use half gap
-            // Platform center = last platform end + half gap + half of current platform length
             nextZ = _lastPlatformZ + GameManager.Instance.GameConfig.platformHalfGap;
         }
-
-        // The platform center is now correctly positioned with the appropriate gap
 
         Debug.Log($"New platform position calculated: Lane={nextX}, Z={nextZ}, isAdjacent={isAdjacent}");
         Debug.Log($"Gap used: {(isAdjacent ? GameManager.Instance.GameConfig.platformGap : GameManager.Instance.GameConfig.platformHalfGap)}");
@@ -156,22 +223,29 @@ public class PlatformManager : MonoBehaviour
         {
             _platformPool.ReturnObject(oldestPlatform);
             _activePlatforms.Dequeue();
+            Debug.Log("Recycled old platform");
         }
     }
 
     private void RegisterServices()
     {
         ServiceLocator.Instance.RegisterService(this);
-        eventSystem = ServiceLocator.Instance.GetService<EventSystem>();
-        eventSystem.Subscribe(GameEventType.PlayerMoved, OnPlayerMoved);
-        eventSystem.Subscribe(GameEventType.PlatformMidpointReached, OnPlatformMidpointReached);
-
+        _eventSystem = ServiceLocator.Instance.GetService<EventSystem>();
+        if (_eventSystem != null)
+        {
+            _eventSystem.Subscribe(GameEventType.PlayerMoved, OnPlayerMoved);
+            _eventSystem.Subscribe(GameEventType.PlatformMidpointReached, OnPlatformMidpointReached);
+        }
     }
 
     private void OnDestroy()
     {
-        eventSystem.Unsubscribe(GameEventType.PlayerMoved, OnPlayerMoved);
-        eventSystem.Unsubscribe(GameEventType.PlatformMidpointReached, OnPlatformMidpointReached);
-        ServiceLocator.Instance.RemoveService<PlatformManager>();
+        if (_eventSystem != null)
+        {
+            _eventSystem.Unsubscribe(GameEventType.PlayerMoved, OnPlayerMoved);
+            _eventSystem.Unsubscribe(GameEventType.PlatformMidpointReached, OnPlatformMidpointReached);
+            _eventSystem.Unsubscribe(GameEventType.GameStarted, OnGameStarted);
+        }
+        ServiceLocator.Instance?.RemoveService<PlatformManager>();
     }
 }
