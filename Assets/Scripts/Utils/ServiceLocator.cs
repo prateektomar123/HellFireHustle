@@ -16,7 +16,7 @@ public class ServiceLocator : MonoSingleton<ServiceLocator>
     {
         if (service == null)
         {
-            Debug.LogError($"Cannot register null service for {typeof(T).Name}.");
+            Debug.LogError($"cannot register null service for {typeof(T).Name}.");
             return;
         }
 
@@ -43,13 +43,6 @@ public class ServiceLocator : MonoSingleton<ServiceLocator>
     public void RemoveService<T>()
     {
         Type type = typeof(T);
-        if (services.Remove(type))
-        {
-            Debug.Log($"Service removed: {type.Name}");
-        }
-        else
-        {
-            Debug.LogWarning($"Service {type.Name} not found for removal.");
-        }
+        
     }
 }

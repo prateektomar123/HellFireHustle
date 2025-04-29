@@ -10,7 +10,7 @@ public class PlatformManager : MonoBehaviour
     private Queue<Platform> _activePlatforms = new();
     private LaneState _currentPlayerLane;
     private float _lastPlatformZ;
-
+    private EventSystem eventSystem;
     private void Awake()
     {
         ValidateSetup();
@@ -115,9 +115,9 @@ public class PlatformManager : MonoBehaviour
             int laneChoice = Random.Range(0, 3);
             nextX = laneChoice switch
             {
-                0 => -GameManager.Instance.GameConfig.laneDistance, // Middle-to-Left
-                1 => 0,                           // Middle-to-Middle
-                _ => GameManager.Instance.GameConfig.laneDistance  // Middle-to-Right
+                0 => -GameManager.Instance.GameConfig.laneDistance, // middle-left
+                1 => 0,                           // middle-middle
+                _ => GameManager.Instance.GameConfig.laneDistance  // middle-right
             };
             isAdjacent = (laneChoice == 1);
             nextZ = _lastPlatformZ + (laneChoice == 1 ? GameManager.Instance.GameConfig.platformLength : GameManager.Instance.GameConfig.platformLength / 2);
@@ -141,26 +141,16 @@ public class PlatformManager : MonoBehaviour
     private void RegisterServices()
     {
         ServiceLocator.Instance.RegisterService(this);
-        var eventSystem = ServiceLocator.Instance.GetService<EventSystem>();
-        if (eventSystem != null)
-        {
-            eventSystem.Subscribe(GameEventType.PlayerMoved, OnPlayerMoved);
-            eventSystem.Subscribe(GameEventType.PlatformMidpointReached, OnPlatformMidpointReached);
-        }
-        else
-        {
-            Debug.LogError("EventSystem not found.", this);
-        }
+        eventSystem = ServiceLocator.Instance.GetService<EventSystem>();
+        eventSystem.Subscribe(GameEventType.PlayerMoved, OnPlayerMoved);
+        eventSystem.Subscribe(GameEventType.PlatformMidpointReached, OnPlatformMidpointReached);
+        
     }
 
     private void OnDestroy()
     {
-        var eventSystem = ServiceLocator.Instance.GetService<EventSystem>();
-        if (eventSystem != null)
-        {
-            eventSystem.Unsubscribe(GameEventType.PlayerMoved, OnPlayerMoved);
-            eventSystem.Unsubscribe(GameEventType.PlatformMidpointReached, OnPlatformMidpointReached);
-        }
+        eventSystem.Unsubscribe(GameEventType.PlayerMoved, OnPlayerMoved);
+        eventSystem.Unsubscribe(GameEventType.PlatformMidpointReached, OnPlatformMidpointReached);
         ServiceLocator.Instance.RemoveService<PlatformManager>();
     }
 }
