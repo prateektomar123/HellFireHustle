@@ -51,8 +51,22 @@ public class GenericObjectPool<T> where T : Component
                 return obj;
             }
         }
+        if (_pool.Count < _maxSize)
+        {
+            return CreateObject();
+        }
+        Debug.LogWarning($"Pool for {typeof(T).Name} reached max size ({_maxSize}). Recycling oldest active object.");
+        if (_pool.Count > 0)
+        {
 
-        return CreateObject();
+            T oldestObject = _pool[0];
+            ReturnObject(oldestObject);
+            oldestObject.gameObject.SetActive(true);
+            return oldestObject;
+        }
+
+        Debug.LogError($"Pool for {typeof(T).Name} is empty and at max size. This should not happen.");
+        return null;
     }
 
     public void ReturnObject(T obj)

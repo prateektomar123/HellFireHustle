@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public enum GameState
 {
@@ -24,15 +25,15 @@ public class GameStateManager : MonoBehaviour
     {
         eventSystem = ServiceLocator.Instance.GetService<EventSystem>();
         eventSystem.Subscribe(GameEventType.PlayerHitFireGround, OnPlayerDied);
-        
-        // Register this service
         ServiceLocator.Instance.RegisterService(this);
+        Time.timeScale = 0f;
     }
 
     public void StartGame()
     {
         SetGameState(GameState.Playing);
         eventSystem.Publish(GameEventType.GameStarted);
+        Time.timeScale = 1f;
     }
 
     public void PauseGame()
@@ -51,8 +52,16 @@ public class GameStateManager : MonoBehaviour
     {
         SetGameState(GameState.GameOver);
         eventSystem.Publish(GameEventType.GameOver);
+        Time.timeScale = 0f;
     }
 
+    public void RestartGame()
+    {
+        SetGameState(GameState.MainMenu);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+
+
+    }
     private void OnPlayerDied(object data)
     {
         GameOver();
@@ -61,8 +70,7 @@ public class GameStateManager : MonoBehaviour
     private void SetGameState(GameState newState)
     {
         currentState = newState;
-        
-        // Update UI based on state
+
         mainMenuUI?.SetActive(newState == GameState.MainMenu);
         gameUI?.SetActive(newState == GameState.Playing);
         pauseMenuUI?.SetActive(newState == GameState.Paused);

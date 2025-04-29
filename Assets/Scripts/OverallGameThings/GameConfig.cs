@@ -10,9 +10,11 @@ public class GameConfig : ScriptableObject
 
     [Header("Platform Settings")]
     public float platformLength = 10f;
+    public float platformGap = 10f;
+    public float platformHalfGap = 5f;
     public float platformWidth = 2f;
     public float platformHeight = 0.5f;
-    
+
     [Header("Pooling Settings")]
     public int initialPoolSize = 5;
 

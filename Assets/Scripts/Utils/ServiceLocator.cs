@@ -5,13 +5,11 @@ using UnityEngine;
 public class ServiceLocator : MonoSingleton<ServiceLocator>
 {
     private Dictionary<Type, object> services;
-
     protected override void Awake()
     {
         base.Awake();
         services = new Dictionary<Type, object>();
     }
-
     public void RegisterService<T>(T service)
     {
         if (service == null)
@@ -28,7 +26,6 @@ public class ServiceLocator : MonoSingleton<ServiceLocator>
         services[type] = service;
         Debug.Log($"Service registered: {type.Name}");
     }
-
     public T GetService<T>()
     {
         Type type = typeof(T);
@@ -36,13 +33,21 @@ public class ServiceLocator : MonoSingleton<ServiceLocator>
         {
             return (T)service;
         }
-        Debug.LogError($"Service not found: {type.Name}");
+
+        Debug.LogWarning($"Service not found: {type.Name}. Returning default value.");
         return default;
     }
-
     public void RemoveService<T>()
     {
         Type type = typeof(T);
-        
+        if (services.ContainsKey(type))
+        {
+            services.Remove(type);
+            Debug.Log($"Service removed: {type.Name}");
+        }
+        else
+        {
+            Debug.LogWarning($"Attempted to remove nonexistent service: {type.Name}");
+        }
     }
 }

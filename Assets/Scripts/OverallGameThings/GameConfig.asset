@@ -16,10 +16,12 @@ MonoBehaviour:
   laneDistance: 2
   laneSwitchDuration: 0.2
   platformLength: 10
+  platformGap: 10
+  platformHalfGap: 8
   platformWidth: 2
   platformHeight: 0.5
   initialPoolSize: 5
   fireGroundYPosition: 0
   fireGroundLength: 112.5
-  cameraYOffset: 2
+  cameraYOffset: 4
   cameraZOffset: -5

@@ -8,18 +8,20 @@ public class PlayerController : MonoBehaviour
     private EventSystem eventSystem;
     private InputService inputService;
 
-    
-
     private void Awake()
     {
         model = new PlayerModel();
         view = GetComponent<PlayerView>();
-        eventSystem = ServiceLocator.Instance.GetService<EventSystem>();
-        inputService = ServiceLocator.Instance.GetService<InputService>();
+        eventSystem = ServiceLocator.Instance?.GetService<EventSystem>();
+        inputService = ServiceLocator.Instance?.GetService<InputService>();
+
     }
 
     private void Update()
     {
+        if (!enabled || GameManager.Instance == null || GameManager.Instance.GameConfig == null)
+            return;
+
         transform.Translate(Vector3.forward * GameManager.Instance.GameConfig.playerForwardSpeed * Time.deltaTime);
 
         ICommand command = inputService?.GetInputCommand();
@@ -27,7 +29,7 @@ public class PlayerController : MonoBehaviour
         {
             command.Execute(model);
             view.MoveToLane(model.CurrentLanePosition, GameManager.Instance.GameConfig.laneSwitchDuration);
-            eventSystem.Publish(GameEventType.PlayerMoved, model.CurrentLaneState);
+            eventSystem?.Publish(GameEventType.PlayerMoved, model.CurrentLaneState);
         }
     }
 }

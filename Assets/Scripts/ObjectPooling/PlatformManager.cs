@@ -46,7 +46,7 @@ public class PlatformManager : MonoBehaviour
     {
         _currentPlayerLane = new MiddleLaneState(null);
         SpawnInitialPlatform();
-        _lastPlatformZ = _activePlatforms.Peek().GetHalfwayPointZ();
+
     }
 
     private void OnPlayerMoved(object data)
@@ -98,32 +98,53 @@ public class PlatformManager : MonoBehaviour
 
         if (_currentPlayerLane is LeftLaneState)
         {
+            // When in left lane, next platform can only be left or middle
             bool stayLeft = Random.value < 0.5f;
             nextX = stayLeft ? -GameManager.Instance.GameConfig.laneDistance : 0;
-            isAdjacent = stayLeft;
-            nextZ = _lastPlatformZ + (stayLeft ? GameManager.Instance.GameConfig.platformLength : GameManager.Instance.GameConfig.platformLength / 2);
+            isAdjacent = stayLeft; // Adjacent only if staying in left lane
         }
         else if (_currentPlayerLane is RightLaneState)
         {
+            // When in right lane, next platform can only be right or middle
             bool stayRight = Random.value < 0.5f;
             nextX = stayRight ? GameManager.Instance.GameConfig.laneDistance : 0;
-            isAdjacent = stayRight;
-            nextZ = _lastPlatformZ + (stayRight ? GameManager.Instance.GameConfig.platformLength : GameManager.Instance.GameConfig.platformLength / 2);
+            isAdjacent = stayRight; // Adjacent only if staying in right lane
         }
-        else // MiddleLaneState or null
+        else // MiddleLaneState
         {
+            // When in middle lane, next platform can be left, middle, or right
             int laneChoice = Random.Range(0, 3);
             nextX = laneChoice switch
             {
-                0 => -GameManager.Instance.GameConfig.laneDistance, // middle-left
-                1 => 0,                           // middle-middle
-                _ => GameManager.Instance.GameConfig.laneDistance  // middle-right
+                0 => -GameManager.Instance.GameConfig.laneDistance, // Left lane
+                1 => 0,                                             // Middle lane
+                _ => GameManager.Instance.GameConfig.laneDistance   // Right lane
             };
-            isAdjacent = (laneChoice == 1);
-            nextZ = _lastPlatformZ + (laneChoice == 1 ? GameManager.Instance.GameConfig.platformLength : GameManager.Instance.GameConfig.platformLength / 2);
+            isAdjacent = (laneChoice == 1); // Adjacent only if staying in middle lane
         }
 
-        Debug.Log($"Spawning platform at X={nextX}, Z={nextZ}, Lane={_currentPlayerLane?.GetType().Name}, StartZ={nextZ - GameManager.Instance.GameConfig.platformLength/2}, Adjacent={isAdjacent}");
+        // _lastPlatformZ is the END of the previous platform
+
+        float platformHalfLength = GameManager.Instance.GameConfig.platformLength / 2;
+
+        if (isAdjacent)
+        {
+            // For same lane, we want gap between platforms
+            // Platform center = last platform end + gap + half of current platform length
+            nextZ = _lastPlatformZ + GameManager.Instance.GameConfig.platformGap;
+        }
+        else
+        {
+            // For lane change, use half gap
+            // Platform center = last platform end + half gap + half of current platform length
+            nextZ = _lastPlatformZ + GameManager.Instance.GameConfig.platformHalfGap;
+        }
+
+        // The platform center is now correctly positioned with the appropriate gap
+
+        Debug.Log($"New platform position calculated: Lane={nextX}, Z={nextZ}, isAdjacent={isAdjacent}");
+        Debug.Log($"Gap used: {(isAdjacent ? GameManager.Instance.GameConfig.platformGap : GameManager.Instance.GameConfig.platformHalfGap)}");
+
         return new Vector3(nextX, 0, nextZ);
     }
 
@@ -131,7 +152,7 @@ public class PlatformManager : MonoBehaviour
     {
         if (_activePlatforms.Count == 0) return;
         Platform oldestPlatform = _activePlatforms.Peek();
-        if (playerZ > oldestPlatform.transform.position.z + GameManager.Instance.GameConfig.platformLength)
+        if (playerZ > oldestPlatform.transform.position.z + GameManager.Instance.GameConfig.platformGap)
         {
             _platformPool.ReturnObject(oldestPlatform);
             _activePlatforms.Dequeue();
@@ -144,7 +165,7 @@ public class PlatformManager : MonoBehaviour
         eventSystem = ServiceLocator.Instance.GetService<EventSystem>();
         eventSystem.Subscribe(GameEventType.PlayerMoved, OnPlayerMoved);
         eventSystem.Subscribe(GameEventType.PlatformMidpointReached, OnPlatformMidpointReached);
-        
+
     }
 
     private void OnDestroy()

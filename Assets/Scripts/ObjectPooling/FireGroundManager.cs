@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using UnityEngine;
-
 public class FireGroundManager : MonoBehaviour
 {
     [SerializeField] private GameObject fireGroundPrefab;
@@ -8,13 +7,11 @@ public class FireGroundManager : MonoBehaviour
     private GenericObjectPool<FireGround> _fireGroundPool;
     private Queue<FireGround> _activeFireGrounds = new();
     private float _lastFireGroundZ;
-
     private void Awake()
     {
         ValidateSetup();
         InitializePool();
     }
-
     private void ValidateSetup()
     {
         if (fireGroundPrefab == null)
@@ -27,9 +24,8 @@ public class FireGroundManager : MonoBehaviour
             Debug.LogError("Player transform not assigned.");
             enabled = false;
         }
-        
-    }
 
+    }
     private void InitializePool()
     {
         _fireGroundPool = new GenericObjectPool<FireGround>(
@@ -39,13 +35,11 @@ public class FireGroundManager : MonoBehaviour
             this.transform
         );
     }
-
     private void Start()
     {
         SpawnInitialFireGrounds();
         _lastFireGroundZ = GameManager.Instance.GameConfig.fireGroundLength;
     }
-
     private void Update()
     {
         if (_activeFireGrounds.Count == 0) return;
@@ -55,16 +49,13 @@ public class FireGroundManager : MonoBehaviour
             RepositionFireGround();
         }
     }
-
     private void SpawnInitialFireGrounds()
     {
-        // First FireGround at Z = 0
         FireGround firstGround = _fireGroundPool.GetObject();
         firstGround.Initialize(GameManager.Instance.GameConfig.fireGroundLength);
         firstGround.transform.position = new Vector3(0, GameManager.Instance.GameConfig.fireGroundYPosition, 0);
         _activeFireGrounds.Enqueue(firstGround);
-
-        // Second FireGround at Z = fireGroundLength
+        //----------------------------------------
         FireGround secondGround = _fireGroundPool.GetObject();
         secondGround.Initialize(GameManager.Instance.GameConfig.fireGroundLength);
         secondGround.transform.position = new Vector3(0, GameManager.Instance.GameConfig.fireGroundYPosition, GameManager.Instance.GameConfig.fireGroundLength);
@@ -78,6 +69,4 @@ public class FireGroundManager : MonoBehaviour
         oldestFireGround.transform.position = new Vector3(0, GameManager.Instance.GameConfig.fireGroundYPosition, _lastFireGroundZ);
         _activeFireGrounds.Enqueue(oldestFireGround);
     }
-
-    
 }
