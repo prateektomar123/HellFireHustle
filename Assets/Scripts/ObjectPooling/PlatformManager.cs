@@ -17,7 +17,8 @@ public class PlatformManager : MonoBehaviour
     private void Awake()
     {
         ValidateSetup();
-        RegisterServices();
+        _activePlatforms = new Queue<Platform>(); // Ensure we start with a fresh queue
+        _currentPlayerLane = new MiddleLaneState(null);
     }
 
     private void ValidateSetup()
@@ -43,28 +44,48 @@ public class PlatformManager : MonoBehaviour
             return;
         }
 
-        Debug.Log("Initializing platform pool");
-        _platformPool = new GenericObjectPool<Platform>(
-            platformPrefab,
-            GameManager.Instance.GameConfig.initialPoolSize,
-            10,
-            transform
-        );
+        // Ensure pool is only created once
+        if (_platformPool == null)
+        {
+            Debug.Log("Initializing platform pool");
+            _platformPool = new GenericObjectPool<Platform>(
+                platformPrefab,
+                GameManager.Instance.GameConfig.initialPoolSize,
+                10,
+                transform
+            );
+        }
     }
 
     private void Start()
     {
-        // Subscribe to game start event to initialize properly
+        RegisterServices();
+    }
+
+    private void RegisterServices()
+    {
+        ServiceLocator.Instance.RegisterService(this);
         _eventSystem = ServiceLocator.Instance.GetService<EventSystem>();
         if (_eventSystem != null)
         {
+            // Unsubscribe first to prevent duplicate subscriptions
+            _eventSystem.Unsubscribe(GameEventType.PlayerMoved, OnPlayerMoved);
+            _eventSystem.Unsubscribe(GameEventType.PlatformMidpointReached, OnPlatformMidpointReached);
+            _eventSystem.Unsubscribe(GameEventType.GameStarted, OnGameStarted);
+
+            // Re-subscribe to events
+            _eventSystem.Subscribe(GameEventType.PlayerMoved, OnPlayerMoved);
+            _eventSystem.Subscribe(GameEventType.PlatformMidpointReached, OnPlatformMidpointReached);
             _eventSystem.Subscribe(GameEventType.GameStarted, OnGameStarted);
+
+            Debug.Log("PlatformManager successfully subscribed to events");
+        }
+        else
+        {
+            Debug.LogError("EventSystem not found in ServiceLocator");
         }
 
         _gameStateManager = ServiceLocator.Instance.GetService<GameStateManager>();
-
-        // Set default lane
-        _currentPlayerLane = new MiddleLaneState(null);
 
         // Initialize pool
         InitializePool();
@@ -73,6 +94,11 @@ public class PlatformManager : MonoBehaviour
     private void OnGameStarted(object data)
     {
         Debug.Log("Game started event received, initializing platforms");
+        // Initialize with fresh state
+        _isInitialized = false;
+        _lastPlatformZ = 0f;
+        _currentPlayerLane = new MiddleLaneState(null);
+
         // Clear any existing platforms from previous runs
         ClearActivePlatforms();
 
@@ -80,6 +106,7 @@ public class PlatformManager : MonoBehaviour
         SpawnInitialPlatform();
 
         _isInitialized = true;
+        Debug.Log("Platform Manager initialized: " + _isInitialized);
     }
 
     private void ClearActivePlatforms()
@@ -103,8 +130,6 @@ public class PlatformManager : MonoBehaviour
                 _platformPool.ReturnObject(platform);
             }
         }
-
-        _lastPlatformZ = 0f;
     }
 
     private void OnPlayerMoved(object data)
@@ -115,13 +140,28 @@ public class PlatformManager : MonoBehaviour
 
     private void OnPlatformMidpointReached(object data)
     {
+        // Debug log to verify this event is being received
+        Debug.Log("Platform midpoint reached event received");
+
         // Check if game is currently in playing state
         if (_gameStateManager != null && _gameStateManager.CurrentState != GameState.Playing)
         {
+            Debug.Log("Game not in playing state, ignoring platform midpoint event");
             return;
         }
 
-        if (_activePlatforms.Count == 0) return;
+        if (!_isInitialized)
+        {
+            Debug.LogWarning("PlatformManager not initialized yet, cannot spawn platform");
+            return;
+        }
+
+        if (_activePlatforms.Count == 0)
+        {
+            Debug.LogWarning("No active platforms, cannot spawn next platform");
+            return;
+        }
+
         SpawnNextPlatform();
         RecycleOldestPlatform(player.position.z);
     }
@@ -144,6 +184,7 @@ public class PlatformManager : MonoBehaviour
         platform.Initialize(GameManager.Instance.GameConfig.platformLength, 0);
         platform.transform.position = Vector3.zero;
         _activePlatforms.Enqueue(platform);
+
 
         Debug.Log("Initial platform spawned");
     }
@@ -224,17 +265,6 @@ public class PlatformManager : MonoBehaviour
             _platformPool.ReturnObject(oldestPlatform);
             _activePlatforms.Dequeue();
             Debug.Log("Recycled old platform");
-        }
-    }
-
-    private void RegisterServices()
-    {
-        ServiceLocator.Instance.RegisterService(this);
-        _eventSystem = ServiceLocator.Instance.GetService<EventSystem>();
-        if (_eventSystem != null)
-        {
-            _eventSystem.Subscribe(GameEventType.PlayerMoved, OnPlayerMoved);
-            _eventSystem.Subscribe(GameEventType.PlatformMidpointReached, OnPlatformMidpointReached);
         }
     }
 

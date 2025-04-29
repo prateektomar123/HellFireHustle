@@ -24,6 +24,8 @@ public class GenericObjectPool<T> where T : Component
         {
             CreateObject();
         }
+
+        Debug.Log($"Pool for {typeof(T).Name} initialized with {initialSize} objects");
     }
 
     private T CreateObject()
@@ -43,23 +45,38 @@ public class GenericObjectPool<T> where T : Component
 
     public T GetObject()
     {
+        // Debug log to help troubleshoot
+        Debug.Log($"Attempting to get object from {typeof(T).Name} pool. Pool size: {_pool.Count}");
+
+        // First try to find an inactive object in the pool
         foreach (T obj in _pool)
         {
-            if (!obj.gameObject.activeInHierarchy)
+            if (obj != null && !obj.gameObject.activeInHierarchy)
             {
+                Debug.Log($"Reusing existing inactive {typeof(T).Name} from pool");
                 obj.gameObject.SetActive(true);
                 return obj;
             }
         }
+
+        // If no inactive objects found and we're below max size, create a new one
         if (_pool.Count < _maxSize)
         {
-            return CreateObject();
+            Debug.Log($"Creating new {typeof(T).Name} for pool");
+            T newObj = CreateObject();
+            if (newObj != null)
+            {
+                newObj.gameObject.SetActive(true);
+                return newObj;
+            }
         }
+
+        // If we're at max size, find the oldest object to recycle
         Debug.LogWarning($"Pool for {typeof(T).Name} reached max size ({_maxSize}). Recycling oldest active object.");
         if (_pool.Count > 0)
         {
-
             T oldestObject = _pool[0];
+            Debug.Log($"Recycling oldest {typeof(T).Name} object");
             ReturnObject(oldestObject);
             oldestObject.gameObject.SetActive(true);
             return oldestObject;
@@ -71,9 +88,17 @@ public class GenericObjectPool<T> where T : Component
 
     public void ReturnObject(T obj)
     {
-        if (obj == null) return;
+        if (obj == null)
+        {
+            Debug.LogWarning("Attempted to return null object to pool");
+            return;
+        }
+
+        // Reset the object's state before returning to pool
         obj.gameObject.SetActive(false);
         obj.transform.SetPositionAndRotation(Vector3.zero, Quaternion.identity);
+
+        Debug.Log($"Object returned to {typeof(T).Name} pool");
     }
 
     public IReadOnlyList<T> PooledObjects => _pool.AsReadOnly();
