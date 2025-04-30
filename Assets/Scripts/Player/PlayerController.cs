@@ -1,4 +1,3 @@
-// Update PlayerController to use constructor injection
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
