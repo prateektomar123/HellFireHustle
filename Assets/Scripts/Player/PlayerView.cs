@@ -4,10 +4,12 @@ public class PlayerView : MonoBehaviour
     private Vector3 targetPosition;
     private float transitionSpeed;
     private bool isMoving;
+
     private void Awake()
     {
         targetPosition = transform.position;
     }
+
     public void MoveToLane(float laneX, float duration)
     {
         if (duration <= 0)
@@ -19,6 +21,7 @@ public class PlayerView : MonoBehaviour
         transitionSpeed = Vector3.Distance(transform.position, targetPosition) / duration;
         isMoving = true;
     }
+
     private void Update()
     {
         if (!isMoving) return;
