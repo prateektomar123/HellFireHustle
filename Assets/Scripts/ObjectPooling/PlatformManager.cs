@@ -1,4 +1,8 @@
-﻿using System.Collections.Generic;
+﻿// this script manages the spawning and recycling of platforms in a game.
+// it uses a generic object pool to manage platform instances and handles player lane changes.
+// the script also subscribes to game events to trigger platform spawning and recycling based on player movement and game state.
+// it ensures that platforms are recycled when they are no longer needed, optimizing memory usage and performance.
+using System.Collections.Generic;
 using UnityEngine;
 public class PlatformManager : MonoBehaviour
 {

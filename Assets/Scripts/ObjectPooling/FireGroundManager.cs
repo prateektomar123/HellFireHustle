@@ -1,3 +1,7 @@
+//this script manages the spawning and recycling of fire ground objects in a game.
+// it uses a generic object pool to manage fire ground instances and handles player movement.
+// the script also subscribes to game events to trigger fire ground spawning and recycling based on player position and game state.
+// it ensures that fire ground objects are recycled when they are no longer needed, optimizing memory usage and performance.
 using System.Collections.Generic;
 using UnityEngine;
 public class FireGroundManager : MonoBehaviour
