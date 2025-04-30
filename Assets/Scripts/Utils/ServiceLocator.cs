@@ -9,15 +9,15 @@ public class ServiceLocator : MonoSingleton<ServiceLocator>
     {
         base.Awake();
         services = new Dictionary<Type, object>();
+        DontDestroyOnLoad(gameObject);
     }
     public void RegisterService<T>(T service)
     {
         if (service == null)
         {
-            Debug.LogError($"cannot register null service for {typeof(T).Name}.");
+            Debug.LogError($"Cannot register null service for {typeof(T).Name}.");
             return;
         }
-
         Type type = typeof(T);
         if (services.ContainsKey(type))
         {
@@ -26,6 +26,7 @@ public class ServiceLocator : MonoSingleton<ServiceLocator>
         services[type] = service;
         Debug.Log($"Service registered: {type.Name}");
     }
+
     public T GetService<T>()
     {
         Type type = typeof(T);
@@ -33,10 +34,9 @@ public class ServiceLocator : MonoSingleton<ServiceLocator>
         {
             return (T)service;
         }
-
-        Debug.LogWarning($"Service not found: {type.Name}. Returning default value.");
-        return default;
+        throw new InvalidOperationException($"Service not found: {type.Name}. Ensure it is registered.");
     }
+
     public void RemoveService<T>()
     {
         Type type = typeof(T);
@@ -44,10 +44,6 @@ public class ServiceLocator : MonoSingleton<ServiceLocator>
         {
             services.Remove(type);
             Debug.Log($"Service removed: {type.Name}");
-        }
-        else
-        {
-            Debug.LogWarning($"Attempted to remove nonexistent service: {type.Name}");
         }
     }
 }

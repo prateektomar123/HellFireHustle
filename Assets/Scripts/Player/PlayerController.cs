@@ -6,29 +6,24 @@ public class PlayerController : MonoBehaviour
     private PlayerView view;
     private EventSystem eventSystem;
     private InputService inputService;
-
+    private GameConfig gameConfig;
     private void Awake()
     {
         model = new PlayerModel();
         view = GetComponent<PlayerView>();
-        eventSystem = ServiceLocator.Instance?.GetService<EventSystem>();
-        inputService = ServiceLocator.Instance?.GetService<InputService>();
-
+        eventSystem = ServiceLocator.Instance.GetService<EventSystem>();
+        inputService = ServiceLocator.Instance.GetService<InputService>();
+        gameConfig = ServiceLocator.Instance.GetService<GameConfig>();
     }
-
     private void Update()
     {
-        if (!enabled || GameManager.Instance == null || GameManager.Instance.GameConfig == null)
-            return;
-
-        transform.Translate(Vector3.forward * GameManager.Instance.GameConfig.playerForwardSpeed * Time.deltaTime);
-
-        ICommand command = inputService?.GetInputCommand();
+        transform.Translate(Vector3.forward * gameConfig.playerForwardSpeed * Time.deltaTime);
+        ICommand command = inputService.GetInputCommand();
         if (command != null)
         {
             command.Execute(model);
-            view.MoveToLane(model.CurrentLanePosition, GameManager.Instance.GameConfig.laneSwitchDuration);
-            eventSystem?.Publish(GameEventType.PlayerMoved, model.CurrentLaneState);
+            view.MoveToLane(model.CurrentLanePosition, gameConfig.laneSwitchDuration);
+            eventSystem.Publish(GameEventType.PlayerMoved, model.CurrentLaneState);
         }
     }
 }

@@ -15,16 +15,13 @@ public class GenericObjectPool<T> where T : Component
             Debug.LogError($"Prefab {prefab?.name} is invalid or lacks {typeof(T).Name}.");
             return;
         }
-
         _prefab = prefab;
         _parent = parent;
         _maxSize = maxSize;
-
         for (int i = 0; i < initialSize; i++)
         {
             CreateObject();
         }
-
         Debug.Log($"Pool for {typeof(T).Name} initialized with {initialSize} objects");
     }
 
@@ -35,7 +32,6 @@ public class GenericObjectPool<T> where T : Component
             Debug.LogWarning($"Pool for {typeof(T).Name} reached max size: {_maxSize}.");
             return null;
         }
-
         GameObject obj = Object.Instantiate(_prefab, _parent);
         T component = obj.GetComponent<T>();
         obj.SetActive(false);

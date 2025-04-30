@@ -1,46 +1,28 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
-public class GameManager : MonoSingleton<GameManager>
+public class GameManager : MonoBehaviour
 {
-    private InputService _inputService;
     [SerializeField] private GameConfig gameConfig;
     public GameConfig GameConfig => gameConfig;
     public bool IsInitialized { get; private set; }
-    protected override void Awake()
+
+    private void Awake()
     {
-        base.Awake();
-        if (gameConfig == null)
-        {
-            Debug.LogError("GameConfig not assigned to GameManager!", this);
-            return;
-        }
-        CleanupServices();
         InitializeServices();
+        DontDestroyOnLoad(gameObject);
+        SceneManager.LoadScene("GameplayScene");
         IsInitialized = true;
         Debug.Log("GameManager initialized successfully");
     }
-    private void CleanupServices()
-    {
-        if (ServiceLocator.Instance != null)
-        {
-            ServiceLocator.Instance.RemoveService<GameConfig>();
-            ServiceLocator.Instance.RemoveService<EventSystem>();
-            ServiceLocator.Instance.RemoveService<InputService>();
-            ServiceLocator.Instance.RemoveService<GameManager>();
-        }
-    }
+
     private void InitializeServices()
     {
         ServiceLocator.Instance.RegisterService(this);
-        _inputService = new InputService();
-        ServiceLocator.Instance.RegisterService(_inputService);
-        EventSystem eventSystem = new EventSystem();
-        ServiceLocator.Instance.RegisterService(eventSystem);
+        ServiceLocator.Instance.RegisterService(new InputService());
+        ServiceLocator.Instance.RegisterService(new EventSystem());
         ServiceLocator.Instance.RegisterService(gameConfig);
         Debug.Log("Core services registered");
     }
-    private void OnDestroy()
-    {
-        CleanupServices();
-    }
+
 }

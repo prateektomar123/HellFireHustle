@@ -3,13 +3,17 @@ using UnityEngine;
 public class MiddleColliderTrigger : MonoBehaviour
 {
     public Platform parentPlatform;
-    private EventSystem _eventSystem;
+    private EventSystem eventSystem;
+
+    private void Awake()
+    {
+        eventSystem = ServiceLocator.Instance.GetService<EventSystem>();
+    }
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player") && parentPlatform != null)
         {
-            _eventSystem = ServiceLocator.Instance?.GetService<EventSystem>();
-            _eventSystem.Publish(GameEventType.PlatformMidpointReached, parentPlatform);
+            eventSystem.Publish(GameEventType.PlatformMidpointReached, parentPlatform);
         }
     }
 }
