@@ -8,6 +8,7 @@ public enum GameState
     Paused,
     GameOver
 }
+
 public class GameStateManager : MonoBehaviour
 {
     private GameState currentState = GameState.MainMenu;

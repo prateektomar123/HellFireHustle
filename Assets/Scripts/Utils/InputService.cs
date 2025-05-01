@@ -19,6 +19,7 @@ public class InputService
         {
             return new MoveRightCommand();
         }
+        // Check for touch input on mobile devices or tablets 
         if (Input.touchCount > 0)
         {
             Touch? currentTouch = null;
