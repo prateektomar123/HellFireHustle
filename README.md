@@ -2,6 +2,8 @@
 
 **Play the game here:** [PLAY--](https://prateektomar123.github.io/HellFireHustle_Build/)
 
+**DEMO VIDEO :** [DEMO VIDEO--](https://drive.google.com/file/d/1F3MjmWBP8PrPJgH6guoMLbwaQ0_yLHWF/view?usp=drive_link)
+
 ## 🔥 Game Overview
 
 HellFire Hustle is a fast-paced endless runner game where you navigate across platforms to avoid falling into the fire below. Switch lanes strategically, time your movements perfectly, and see how far you can go!
