@@ -5,7 +5,7 @@ public class GenericObjectPool<T> where T : Component
 {
     private readonly List<T> _pool = new();
     private GameObject _prefab;
-    private Transform _parent;
+    private Transform _parent;// _ are just for name convention for initialization
     private int _maxSize;
 
     public GenericObjectPool(GameObject prefab, int initialSize, int maxSize, Transform parent)

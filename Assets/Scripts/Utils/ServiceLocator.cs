@@ -5,19 +5,37 @@ using UnityEngine;
 public class ServiceLocator : MonoSingleton<ServiceLocator>
 {
     private Dictionary<Type, object> services;
+    private static bool isInitialized = false;
+
     protected override void Awake()
     {
         base.Awake();
-        services = new Dictionary<Type, object>();
-        DontDestroyOnLoad(gameObject);
+
+        if (services == null)
+        {
+            services = new Dictionary<Type, object>();
+        }
+
+        isInitialized = true;
+        Debug.Log("ServiceLocator initialized successfully");
     }
+    private void EnsureInitialized()
+    {
+        if (!isInitialized)
+        {
+            if (services == null)
+            {
+                services = new Dictionary<Type, object>();
+            }
+            isInitialized = true;
+            Debug.Log("ServiceLocator manually initialized");
+        }
+    }
+
     public void RegisterService<T>(T service)
     {
-        if (service == null)
-        {
-            Debug.LogError($"Cannot register null service for {typeof(T).Name}.");
-            return;
-        }
+        EnsureInitialized();
+
         Type type = typeof(T);
         if (services.ContainsKey(type))
         {
@@ -29,6 +47,8 @@ public class ServiceLocator : MonoSingleton<ServiceLocator>
 
     public T GetService<T>()
     {
+        EnsureInitialized();
+
         Type type = typeof(T);
         if (services.TryGetValue(type, out object service))
         {
@@ -39,6 +59,8 @@ public class ServiceLocator : MonoSingleton<ServiceLocator>
 
     public void RemoveService<T>()
     {
+        EnsureInitialized();
+
         Type type = typeof(T);
         if (services.ContainsKey(type))
         {
