@@ -7,14 +7,17 @@ public class PlayerController : MonoBehaviour
     private EventSystem eventSystem;
     private InputService inputService;
     private GameConfig gameConfig;
+
     private void Awake()
     {
         model = new PlayerModel();
         view = GetComponent<PlayerView>();
-        eventSystem = ServiceLocator.Instance.GetService<EventSystem>();
-        inputService = ServiceLocator.Instance.GetService<InputService>();
-        gameConfig = ServiceLocator.Instance.GetService<GameConfig>();
+        var serviceLocator = ServiceLocator.Instance;
+        eventSystem = serviceLocator.GetService<EventSystem>();
+        inputService = serviceLocator.GetService<InputService>();
+        gameConfig = serviceLocator.GetService<GameConfig>();
     }
+
     private void Update()
     {
         transform.Translate(Vector3.forward * gameConfig.playerForwardSpeed * Time.deltaTime);

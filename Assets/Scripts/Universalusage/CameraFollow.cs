@@ -13,6 +13,7 @@ public class CameraFollow : MonoBehaviour
         }
         config = ServiceLocator.Instance.GetService<GameConfig>();
     }
+
     private void LateUpdate()
     {
         transform.position = new Vector3(

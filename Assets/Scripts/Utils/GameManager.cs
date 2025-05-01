@@ -17,9 +17,10 @@ public class GameManager : MonoSingleton<GameManager>
 
     private void InitializeServices()
     {
-        ServiceLocator.Instance.RegisterService(this);
-        ServiceLocator.Instance.RegisterService(new InputService());
-        ServiceLocator.Instance.RegisterService(new EventSystem());
-        ServiceLocator.Instance.RegisterService(gameConfig);
+        var serviceLocator = ServiceLocator.Instance;
+        serviceLocator.RegisterService(this);
+        serviceLocator.RegisterService(new InputService());
+        serviceLocator.RegisterService(new EventSystem());
+        serviceLocator.RegisterService(gameConfig);
     }
 }

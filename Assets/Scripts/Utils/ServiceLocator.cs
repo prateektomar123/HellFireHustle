@@ -10,15 +10,14 @@ public class ServiceLocator : MonoSingleton<ServiceLocator>
     protected override void Awake()
     {
         base.Awake();
-
         if (services == null)
         {
             services = new Dictionary<Type, object>();
         }
-
         isInitialized = true;
         Debug.Log("ServiceLocator initialized successfully");
     }
+
     private void EnsureInitialized()
     {
         if (!isInitialized)
@@ -35,7 +34,6 @@ public class ServiceLocator : MonoSingleton<ServiceLocator>
     public void RegisterService<T>(T service)
     {
         EnsureInitialized();
-
         Type type = typeof(T);
         if (services.ContainsKey(type))
         {
@@ -48,7 +46,6 @@ public class ServiceLocator : MonoSingleton<ServiceLocator>
     public T GetService<T>()
     {
         EnsureInitialized();
-
         Type type = typeof(T);
         if (services.TryGetValue(type, out object service))
         {
@@ -60,7 +57,6 @@ public class ServiceLocator : MonoSingleton<ServiceLocator>
     public void RemoveService<T>()
     {
         EnsureInitialized();
-
         Type type = typeof(T);
         if (services.ContainsKey(type))
         {

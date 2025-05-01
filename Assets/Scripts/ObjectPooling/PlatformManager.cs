@@ -4,6 +4,7 @@
 // it ensures that platforms are recycled when they are no longer needed, optimizing memory usage and performance.
 using System.Collections.Generic;
 using UnityEngine;
+
 public class PlatformManager : MonoBehaviour
 {
     [SerializeField] private GameObject platformPrefab;
@@ -27,9 +28,10 @@ public class PlatformManager : MonoBehaviour
             enabled = false;
             return;
         }
-        config = ServiceLocator.Instance.GetService<GameConfig>();
-        eventSystem = ServiceLocator.Instance.GetService<EventSystem>();
-        gameStateManager = ServiceLocator.Instance.GetService<GameStateManager>();
+        var serviceLocator = ServiceLocator.Instance;
+        config = serviceLocator.GetService<GameConfig>();
+        eventSystem = serviceLocator.GetService<EventSystem>();
+        gameStateManager = serviceLocator.GetService<GameStateManager>();
         InitializePool();
     }
 

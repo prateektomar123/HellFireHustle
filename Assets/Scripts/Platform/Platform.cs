@@ -15,6 +15,7 @@ public class Platform : MonoBehaviour
         transform.localScale = new Vector3(config.platformWidth, config.platformHeight, length);
         transform.position = new Vector3(lanePositionX, 0, transform.position.z);
     }
+
     public float GetHalfwayPointZ()
     {
         return transform.position.z;

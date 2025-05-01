@@ -1,6 +1,7 @@
 public class MiddleLaneState : LaneState
 {
     public MiddleLaneState(PlayerModel model) : base(model) { }
+
     public override LaneState MoveLeft()
     {
         return new LeftLaneState(model);

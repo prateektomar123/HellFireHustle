@@ -4,6 +4,7 @@
 // it ensures that fire ground objects are recycled when they are no longer needed, optimizing memory usage and performance.
 using System.Collections.Generic;
 using UnityEngine;
+
 public class FireGroundManager : MonoBehaviour
 {
     [SerializeField] private GameObject fireGroundPrefab;
