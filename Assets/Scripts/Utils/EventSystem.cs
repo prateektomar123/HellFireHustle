@@ -9,13 +9,16 @@ public enum GameEventType
     GameOver,
     GameStarted
 }
+
 public class EventSystem
 {
     private Dictionary<GameEventType, List<Action<object>>> eventListeners;
+
     public EventSystem()
     {
         eventListeners = new Dictionary<GameEventType, List<Action<object>>>();
     }
+
     public void Subscribe(GameEventType eventType, Action<object> listener)
     {
         if (!eventListeners.ContainsKey(eventType))
@@ -24,6 +27,7 @@ public class EventSystem
         }
         eventListeners[eventType].Add(listener);
     }
+
     public void Unsubscribe(GameEventType eventType, Action<object> listener)
     {
         if (eventListeners.ContainsKey(eventType))
@@ -31,6 +35,7 @@ public class EventSystem
             eventListeners[eventType].Remove(listener);
         }
     }
+
     public void Publish(GameEventType eventType, object data = null)
     {
         if (eventListeners.ContainsKey(eventType))

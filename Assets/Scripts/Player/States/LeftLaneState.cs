@@ -14,6 +14,6 @@ public class LeftLaneState : LaneState
 
     public override float GetLanePosition()
     {
-        return -GameManager.Instance.GameConfig.laneDistance;
+        return -ServiceLocator.Instance.GetService<GameConfig>().laneDistance;
     }
 }

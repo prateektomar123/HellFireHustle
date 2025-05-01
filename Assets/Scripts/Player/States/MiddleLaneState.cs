@@ -6,12 +6,10 @@ public class MiddleLaneState : LaneState
     {
         return new LeftLaneState(model);
     }
-
     public override LaneState MoveRight()
     {
         return new RightLaneState(model);
     }
-
     public override float GetLanePosition()
     {
         return 0f;

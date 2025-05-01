@@ -8,7 +8,6 @@ public enum GameState
     Paused,
     GameOver
 }
-
 public class GameStateManager : MonoBehaviour
 {
     private GameState currentState = GameState.MainMenu;
@@ -61,16 +60,7 @@ public class GameStateManager : MonoBehaviour
 
     public void RestartGame()
     {
-        CleanupBeforeRestart();
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
-    }
-
-    private void CleanupBeforeRestart()
-    {
-        eventSystem.Unsubscribe(GameEventType.PlayerHitFireGround, OnPlayerDied);
-        Time.timeScale = 1f;
-        SetGameState(GameState.MainMenu);
-        InitializeEventSystem();
     }
 
     private void OnPlayerDied(object data)
@@ -81,10 +71,10 @@ public class GameStateManager : MonoBehaviour
     private void SetGameState(GameState newState)
     {
         currentState = newState;
-        if (mainMenuUI != null) mainMenuUI.SetActive(newState == GameState.MainMenu);
-        if (gameUI != null) gameUI.SetActive(newState == GameState.Playing);
-        if (pauseMenuUI != null) pauseMenuUI.SetActive(newState == GameState.Paused);
-        if (gameOverUI != null) gameOverUI.SetActive(newState == GameState.GameOver);
+        mainMenuUI.SetActive(newState == GameState.MainMenu);
+        gameUI.SetActive(newState == GameState.Playing);
+        pauseMenuUI.SetActive(newState == GameState.Paused);
+        gameOverUI.SetActive(newState == GameState.GameOver);
         Debug.Log($"Game state changed to: {newState}");
     }
 

@@ -6,14 +6,12 @@ public class RightLaneState : LaneState
     {
         return new MiddleLaneState(model);
     }
-
     public override LaneState MoveRight()
     {
         return this; // Cannot move right from Right
     }
-
     public override float GetLanePosition()
     {
-        return GameManager.Instance.GameConfig.laneDistance;
+        return ServiceLocator.Instance.GetService<GameConfig>().laneDistance;
     }
 }

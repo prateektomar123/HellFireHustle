@@ -7,7 +7,7 @@ public class PlayerModel
     public PlayerModel()
     {
         CurrentLaneState = new MiddleLaneState(this);
-        CurrentLanePosition = 0f; 
+        CurrentLanePosition = 0f;
     }
 
     public void MoveLeft()
